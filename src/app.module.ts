@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { HelloWorldModule } from './hello-world/hello-world.module';
+import { FilmsModule } from './films/films.module';
+import { ExternalApiModule } from './external-api/external-api.module';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { HelloWorldModule } from './hello-world/hello-world.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
-    HelloWorldModule,
+    FilmsModule,
   ],
 })
 export class AppModule {}
