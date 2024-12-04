@@ -6,15 +6,63 @@ export class SwapiService {
   constructor(private readonly externalApiService: ExternalApiService) {}
 
   async getSwapiFilms(): Promise<SwapiFilm[]> {
-    const swapiFilmResponse = await this.externalApiService.fetch<
-      SwapiResponse<SwapiFilm>
-    >("https://swapi.dev/api/films");
-    return swapiFilmResponse.results;
+    return await this.getAll<SwapiFilm>("films");
   }
 
   async getSwapiFilm(id): Promise<SwapiFilm> {
-    return this.externalApiService.fetch<SwapiFilm>(
-      `https://swapi.dev/api/films/${id}`,
+    return await this.getById<SwapiFilm>("films", id);
+  }
+
+  async getSwapiCharacters(): Promise<SwapiCharacter[]> {
+    return await this.getAll<SwapiCharacter>("people");
+  }
+
+  async getSwapiCharacter(id): Promise<SwapiCharacter> {
+    return await this.getById("people", id);
+  }
+
+  async getSwapiPlanets(): Promise<SwapiPlanet[]> {
+    return await this.getAll<SwapiPlanet>("planets");
+  }
+
+  async getSwapiPlanet(id): Promise<SwapiPlanet> {
+    return await this.getById("planets", id);
+  }
+
+  async getSwapiSpecies(): Promise<SwapiSpecies[]> {
+    return await this.getAll<SwapiSpecies>("species");
+  }
+
+  async getOneSwapiSpecies(id): Promise<SwapiSpecies> {
+    return await this.getById("species", id);
+  }
+
+  async getSwapiStarships(): Promise<SwapiStarship[]> {
+    return await this.getAll<SwapiStarship>("starships");
+  }
+
+  async getSwapiStarship(id): Promise<SwapiStarship> {
+    return await this.getById("starships", id);
+  }
+
+  async getSwapiVehicles(): Promise<SwapiVehicle[]> {
+    return await this.getAll<SwapiVehicle>("vehicles");
+  }
+
+  async getSwapiVehicle(id): Promise<SwapiVehicle> {
+    return await this.getById("vehicles", id);
+  }
+
+  private async getAll<T>(entityName: string): Promise<T[]> {
+    const swapiResponse = await this.externalApiService.fetch<SwapiResponse<T>>(
+      `https://swapi.dev/api/${entityName}`,
+    );
+    return swapiResponse.results;
+  }
+
+  private async getById<T>(entityName: string, id: string): Promise<T> {
+    return await this.externalApiService.fetch<T>(
+      `https://swapi.dev/api/${entityName}/${id}`,
     );
   }
 }
@@ -38,6 +86,100 @@ export type SwapiFilm = {
   starships: string[];
   vehicles: string[];
   species: string[];
+  created: string;
+  edited: string;
+  url: string;
+};
+
+export type SwapiCharacter = {
+  name: string;
+  height: string;
+  mass: string;
+  hair_color: string;
+  skin_color: string;
+  eye_color: string;
+  birth_year: string;
+  gender: string;
+  homeworld: string;
+  films: string[];
+  species: string[];
+  vehicles: string[];
+  starships: string[];
+  created: string;
+  edited: string;
+  url: string;
+};
+
+export type SwapiPlanet = {
+  name: string;
+  rotation_period: string;
+  orbital_period: string;
+  diameter: string;
+  climate: string;
+  gravity: string;
+  terrain: string;
+  surface_water: string;
+  population: string;
+  residents: string[];
+  films: string[];
+  created: string;
+  edited: string;
+  url: string;
+};
+
+export type SwapiSpecies = {
+  name: string;
+  classification: string;
+  designation: string;
+  average_height: string;
+  skin_colors: string;
+  hair_colors: string;
+  eye_colors: string;
+  average_lifespan: string;
+  homeworld: string;
+  language: string;
+  people: string[];
+  films: string[];
+  created: string;
+  edited: string;
+  url: string;
+};
+
+export type SwapiStarship = {
+  name: string;
+  model: string;
+  manufacturer: string;
+  cost_in_credits: string;
+  length: string;
+  max_atmosphering_speed: string;
+  crew: string;
+  passengers: string;
+  cargo_capacity: string;
+  consumables: string;
+  hyperdrive_rating: string;
+  MGLT: string;
+  starship_class: string;
+  pilots: string[];
+  films: string[];
+  created: string;
+  edited: string;
+  url: string;
+};
+
+export type SwapiVehicle = {
+  name: string;
+  model: string;
+  manufacturer: string;
+  cost_in_credits: string;
+  length: string;
+  max_atmosphering_speed: string;
+  crew: string;
+  passengers: string;
+  cargo_capacity: string;
+  consumables: string;
+  vehicle_class: string;
+  pilots: string[];
+  films: string[];
   created: string;
   edited: string;
   url: string;
