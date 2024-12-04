@@ -1,9 +1,8 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ExternalApiService } from "./external-api.service";
 
 @Injectable()
 export class SwapiService {
-  private readonly logger = new Logger(SwapiService.name);
   constructor(private readonly externalApiService: ExternalApiService) {}
 
   async getSwapiFilms(): Promise<SwapiFilm[]> {
