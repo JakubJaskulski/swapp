@@ -7,11 +7,11 @@ export class FilmsController {
 
     @Get()
     async getFilms(): Promise</* TBD */ any[]> {
-        return this.filmService.findAll();
+        return await this.filmService.findAll();
     }
 
     @Get(':id')
     async getFilm(@Param('id') id: string): Promise<any> {
-        return this.filmService.findOne(id);
+        return await this.filmService.findOne(id);
     }
 }

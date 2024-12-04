@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { FilmsModule } from './films/films.module';
-import { ExternalApiModule } from './external-api/external-api.module';
+import { FilmsModule } from './modules/films/films.module';
+import { SwapiModule } from './shared/swapi/swapi.module';
 
 @Module({
   imports: [
@@ -16,6 +16,7 @@ import { ExternalApiModule } from './external-api/external-api.module';
       synchronize: true,
     }),
     FilmsModule,
+    SwapiModule,
   ],
 })
 export class AppModule {}
