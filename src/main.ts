@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import {SwappErrorFilter} from "./filters/swapp.filter";
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { SwappErrorFilter } from "./filters/swapp.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
