@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import { PlanetsService } from "./planets.service";
 import { Planet } from "./planet.entity";
 
@@ -7,8 +7,11 @@ export class PlanetsController {
   constructor(private readonly planetService: PlanetsService) {}
 
   @Get()
-  async getPlanets(@Body() filter: any): Promise<Planet[]> {
-    return await this.planetService.findAll(filter);
+  async getPlanets(
+    @Query("search") search: string,
+    @Query("page") page: number,
+  ): Promise<Planet[]> {
+    return await this.planetService.findAll(search, page);
   }
 
   @Get(":id")

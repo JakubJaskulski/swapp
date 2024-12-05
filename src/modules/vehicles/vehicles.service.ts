@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { SwapiService, SwapiVehicle } from "../../shared/swapi/swapi.service";
-import { filter } from "lodash";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Vehicle } from "./vehicle.entity";
@@ -13,18 +12,21 @@ export class VehiclesService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(dataFilter: Partial<SwapiVehicle>): Promise<SwapiVehicle[]> {
+  async findAll(search: string, page: number): Promise<SwapiVehicle[]> {
     const dbFilms = await this.vehicleRepository.find();
 
     if (dbFilms && dbFilms.length > 0) {
       return dbFilms;
     }
 
-    const swapiVehicles = await this.swapiService.getSwapiVehicles();
+    const swapiVehicles = await this.swapiService.getSwapiVehicles(
+      search,
+      page,
+    );
 
     await this.vehicleRepository.save(swapiVehicles);
 
-    return filter(swapiVehicles, dataFilter);
+    return swapiVehicles;
   }
 
   async findOne(id): Promise<SwapiVehicle> {

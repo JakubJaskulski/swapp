@@ -10,7 +10,7 @@ export class FilmsController {
   async getFilms(
     @Query("search") search: string,
     @Query("page") page: number,
-  ): Promise<Film[]> {
+  ): Promise<Omit<Film, "search" | "page">[]> {
     return await this.filmService.findAll(search, page);
   }
 

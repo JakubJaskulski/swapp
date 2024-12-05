@@ -92,7 +92,10 @@ export class SwapiService {
     const url = this.buildSwapiUrl(elements);
     const swapiResponse =
       await this.externalApiService.fetch<SwapiResponse<T>>(url);
-    return swapiResponse.results;
+
+    return swapiResponse.results.map((result) => {
+      return { ...result, search: [elements.search], page: elements.page || 1 };
+    });
   }
 
   private async getById<T>(elements: UrlElements): Promise<T> {
@@ -137,7 +140,7 @@ export type SwapiResponse<T> = {
   results: T[];
 };
 
-export type SwapiFilm = {
+export type SwapiFilm = SwapiResource & {
   title: string;
   episode_id: number;
   opening_crawl: string;
@@ -154,7 +157,7 @@ export type SwapiFilm = {
   url: string;
 };
 
-export type SwapiCharacter = {
+export type SwapiCharacter = SwapiResource & {
   name: string;
   height: string;
   mass: string;
@@ -173,7 +176,7 @@ export type SwapiCharacter = {
   url: string;
 };
 
-export type SwapiPlanet = {
+export type SwapiPlanet = SwapiResource & {
   name: string;
   rotation_period: string;
   orbital_period: string;
@@ -190,7 +193,7 @@ export type SwapiPlanet = {
   url: string;
 };
 
-export type SwapiSpecies = {
+export type SwapiSpecies = SwapiResource & {
   name: string;
   classification: string;
   designation: string;
@@ -208,7 +211,7 @@ export type SwapiSpecies = {
   url: string;
 };
 
-export type SwapiStarship = {
+export type SwapiStarship = SwapiResource & {
   name: string;
   model: string;
   manufacturer: string;
@@ -229,7 +232,7 @@ export type SwapiStarship = {
   url: string;
 };
 
-export type SwapiVehicle = {
+export type SwapiVehicle = SwapiResource & {
   name: string;
   model: string;
   manufacturer: string;
@@ -246,4 +249,10 @@ export type SwapiVehicle = {
   created: string;
   edited: string;
   url: string;
+};
+
+export type SwapiResource = {
+  url: string;
+  search: string[] | undefined;
+  page: number;
 };

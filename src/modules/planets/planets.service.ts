@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { SwapiPlanet, SwapiService } from "../../shared/swapi/swapi.service";
-import { filter } from "lodash";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Planet } from "./planet.entity";
@@ -13,18 +12,18 @@ export class PlanetsService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(dataFilter: Partial<SwapiPlanet>): Promise<SwapiPlanet[]> {
+  async findAll(search: string, page: number): Promise<SwapiPlanet[]> {
     const dbPlanets = await this.planetRepository.find();
 
     if (dbPlanets && dbPlanets.length > 0) {
-      return filter(dbPlanets, dataFilter);
+      return dbPlanets;
     }
 
-    const swapiPlanets = await this.swapiService.getSwapiPlanets();
+    const swapiPlanets = await this.swapiService.getSwapiPlanets(search, page);
 
     await this.planetRepository.save(swapiPlanets);
 
-    return filter(swapiPlanets, dataFilter);
+    return swapiPlanets;
   }
 
   async findOne(id): Promise<SwapiPlanet> {

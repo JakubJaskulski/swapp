@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import { CharactersService } from "./characters.service";
 import { Character } from "./character.entity";
 
@@ -7,8 +7,11 @@ export class CharactersController {
   constructor(private readonly characterService: CharactersService) {}
 
   @Get()
-  async getCharacters(@Body() filter: any): Promise<Character[]> {
-    return await this.characterService.findAll(filter);
+  async getCharacters(
+    @Query("search") search: string,
+    @Query("page") page: number,
+  ): Promise<Character[]> {
+    return await this.characterService.findAll(search, page);
   }
 
   @Get(":id")

@@ -49,4 +49,10 @@ export class Character {
 
   @Column()
   edited: string;
+
+  @Column("text", { array: true, nullable: true })
+  search: string[];
+
+  @Column()
+  page: number;
 }

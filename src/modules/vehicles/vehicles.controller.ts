@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import { VehiclesService } from "./vehicles.service";
 import { Vehicle } from "./vehicle.entity";
 
@@ -7,8 +7,11 @@ export class VehiclesController {
   constructor(private readonly vehicleService: VehiclesService) {}
 
   @Get()
-  async getVehicles(@Body() filter: any): Promise<Vehicle[]> {
-    return await this.vehicleService.findAll(filter);
+  async getVehicles(
+    @Query("search") search: string,
+    @Query("page") page: number,
+  ): Promise<Vehicle[]> {
+    return await this.vehicleService.findAll(search, page);
   }
 
   @Get(":id")
