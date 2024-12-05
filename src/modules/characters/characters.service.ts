@@ -1,32 +1,39 @@
 import { Injectable } from "@nestjs/common";
 import { SwapiCharacter, SwapiService } from "../../shared/swapi/swapi.service";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Raw } from "typeorm";
 import { Character } from "./character.entity";
+import { BaseRepository } from "../../repositories/swapp-repository";
 
 @Injectable()
 export class CharactersService {
   constructor(
     @InjectRepository(Character)
-    private readonly charactersRepository: Repository<Character>,
+    private readonly charactersRepository: BaseRepository<Character>,
     private readonly swapiService: SwapiService,
   ) {}
 
   async findAll(search: string, page: number): Promise<Character[]> {
-    const dbCharacters = await this.charactersRepository.find();
+    const cachedFilms = await this.charactersRepository.find({
+      where: {
+        search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),
+        page,
+      },
+    });
 
-    if (dbCharacters && dbCharacters.length > 0) {
-      return dbCharacters;
+    if (cachedFilms && cachedFilms.length > 0) {
+      return cachedFilms;
     }
 
-    const swapiCharacters = await this.swapiService.getSwapiCharacters(
-      search,
-      page,
-    );
+    const swapiFilms = await this.swapiService.getSwapiCharacters(search, page);
 
-    await this.charactersRepository.save(swapiCharacters);
+    swapiFilms.forEach((swapiFilm) => {
+      this.charactersRepository.upsertWithArrayMerge(swapiFilm, "url", [
+        "search",
+      ]);
+    });
 
-    return swapiCharacters;
+    return swapiFilms;
   }
 
   async findOne(id): Promise<SwapiCharacter> {
