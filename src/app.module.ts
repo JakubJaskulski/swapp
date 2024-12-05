@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { FilmsModule } from "./modules/films/films.module";
 import { SwapiModule } from "./shared/swapi/swapi.module";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -17,6 +18,10 @@ import { SwapiModule } from "./shared/swapi/swapi.module";
     }),
     FilmsModule,
     SwapiModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [`.env.${process.env.NODE_ENV}`, ".env"],
+    }),
   ],
 })
 export class AppModule {}

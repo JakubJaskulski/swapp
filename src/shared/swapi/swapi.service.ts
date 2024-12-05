@@ -1,9 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { ExternalApiService } from "./external-api.service";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class SwapiService {
-  constructor(private readonly externalApiService: ExternalApiService) {}
+  constructor(
+    private readonly externalApiService: ExternalApiService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  baseUrl = this.configService.get<string>("SWAPI_BASE_API");
 
   async getSwapiFilms(search: string, page: number): Promise<SwapiFilm[]> {
     return await this.getAll<SwapiFilm>("films", search, page);
@@ -58,14 +64,34 @@ export class SwapiService {
     search?: string,
     page?: number,
   ): Promise<T[]> {
-    const baseUrl = `https://swapi.dev/api/${entityName}/`;
-    const params = {
-      search,
-      page,
-    };
+    const url = this.buildSwapiUrl({ entityName, search, page });
+    const swapiResponse =
+      await this.externalApiService.fetch<SwapiResponse<T>>(url);
+    return swapiResponse.results;
+  }
 
-    /* TBD */
-    const url = new URL(baseUrl);
+  private async getById<T>(entityName: string, id: number): Promise<T> {
+    const url = this.buildSwapiUrl({ entityName, id });
+    return await this.externalApiService.fetch<T>(url);
+  }
+
+  private buildSwapiUrl(elements: {
+    entityName: string;
+    id?: number;
+    search?: string;
+    page?: number;
+  }) {
+    const url = new URL(`${this.baseUrl}/${elements.entityName}`);
+
+    if (elements.id) {
+      url.pathname = `${url.pathname}/${elements.id}`;
+      return url.href;
+    }
+
+    const params = {
+      search: elements.search,
+      page: elements.page,
+    };
 
     Object.entries(params).forEach(([key, value]) => {
       if (value) {
@@ -73,16 +99,7 @@ export class SwapiService {
       }
     });
 
-    const swapiResponse = await this.externalApiService.fetch<SwapiResponse<T>>(
-      url.href,
-    );
-    return swapiResponse.results;
-  }
-
-  private async getById<T>(entityName: string, id: string): Promise<T> {
-    return await this.externalApiService.fetch<T>(
-      `https://swapi.dev/api/${entityName}/${id}`,
-    );
+    return url.href;
   }
 }
 
