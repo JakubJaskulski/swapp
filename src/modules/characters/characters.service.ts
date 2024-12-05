@@ -4,14 +4,12 @@ import { filter } from "lodash";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Character } from "./character.entity";
-import { Film } from "../films/film.entity";
 
 @Injectable()
 export class CharactersService {
   constructor(
     @InjectRepository(Character)
     private readonly charactersRepository: Repository<Character>,
-    private readonly filmRepository: Repository<Film>,
     private readonly swapiService: SwapiService,
   ) {}
 

@@ -1,17 +1,18 @@
 import { Body, Controller, Get, Param } from "@nestjs/common";
 import { StarshipsService } from "./starships.service";
+import { Starship } from "./starship.entity";
 
-@Controller("films")
+@Controller("starship")
 export class StarshipsController {
-  constructor(private readonly filmService: StarshipsService) {}
+  constructor(private readonly starshipService: StarshipsService) {}
 
   @Get()
-  async getStarships(@Body() filter: any): Promise</* TBD */ any[]> {
-    return await this.filmService.findAll(filter);
+  async getStarships(@Body() filter: any): Promise<Starship[]> {
+    return await this.starshipService.findAll(filter);
   }
 
   @Get(":id")
-  async getStarship(@Param("id") id: string): Promise<any> {
-    return await this.filmService.findOne(id);
+  async getStarship(@Param("id") id: string): Promise<Starship> {
+    return await this.starshipService.findOne(id);
   }
 }

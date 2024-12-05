@@ -9,12 +9,12 @@ import { Planet } from "./planet.entity";
 export class PlanetsService {
   constructor(
     @InjectRepository(Planet)
-    private readonly filmsRepository: Repository<Planet>,
+    private readonly planetRepository: Repository<Planet>,
     private readonly swapiService: SwapiService,
   ) {}
 
   async findAll(dataFilter: Partial<SwapiPlanet>): Promise<SwapiPlanet[]> {
-    const dbPlanets = await this.filmsRepository.find();
+    const dbPlanets = await this.planetRepository.find();
 
     if (dbPlanets && dbPlanets.length > 0) {
       return filter(dbPlanets, dataFilter);
@@ -22,7 +22,7 @@ export class PlanetsService {
 
     const swapiPlanets = await this.swapiService.getSwapiPlanets();
 
-    await this.filmsRepository.save(swapiPlanets);
+    await this.planetRepository.save(swapiPlanets);
 
     return filter(swapiPlanets, dataFilter);
   }

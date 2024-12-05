@@ -9,12 +9,12 @@ import { Species } from "./species.entity";
 export class SpeciesService {
   constructor(
     @InjectRepository(Species)
-    private readonly filmsRepository: Repository<Species>,
+    private readonly speciesRepository: Repository<Species>,
     private readonly swapiService: SwapiService,
   ) {}
 
   async findAll(dataFilter: Partial<SwapiSpecies>): Promise<SwapiSpecies[]> {
-    const dbSpecies = await this.filmsRepository.find();
+    const dbSpecies = await this.speciesRepository.find();
 
     if (dbSpecies && dbSpecies.length > 0) {
       return dbSpecies;
@@ -22,7 +22,7 @@ export class SpeciesService {
 
     const swapiSpecies = await this.swapiService.getSwapiSpecies();
 
-    await this.filmsRepository.save(swapiSpecies);
+    await this.speciesRepository.save(swapiSpecies);
 
     return filter(swapiSpecies, dataFilter);
   }

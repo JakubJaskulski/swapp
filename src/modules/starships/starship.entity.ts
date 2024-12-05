@@ -1,6 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToMany, JoinTable } from "typeorm";
-import { Character } from "../characters/character.entity";
-import { Film } from "../films/film.entity";
+import { Entity, PrimaryColumn, Column } from "typeorm";
 
 @Entity()
 export class Starship {

@@ -14,13 +14,20 @@ export class ExternalApiService {
     } catch (error) {
       if (isAxiosError(error)) {
         const statusCode = error.response?.status || HttpStatus.BAD_GATEWAY;
-        const message =
-          (error.response?.data as { message?: string })?.message ||
-          "Failed to fetch data";
-        throw new SwapiError(statusCode, message);
+        if (statusCode === HttpStatus.NOT_FOUND) {
+          throw new SwapiError("Resource not found", {
+            url,
+            statusCode,
+            error: String(error),
+          });
+        }
       }
 
-      throw new SwapiError(HttpStatus.INTERNAL_SERVER_ERROR, String(error));
+      throw new SwapiError("Failed to fetch data", {
+        url,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: String(error),
+      });
     }
   }
 }

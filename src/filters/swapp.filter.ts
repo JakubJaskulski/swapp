@@ -10,16 +10,20 @@ export class SwappErrorFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    /* TBD */ const status = exception instanceof SwapiError ? 404 : 500;
+    /* TBD */
+    const status = exception instanceof SwapiError ? 404 : 500;
 
     const jsonBody = {
       message: exception.message,
       statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
     };
 
-    const errorLog: ErrorLog = { ...jsonBody, error: exception };
+    const errorLog: ErrorLog = {
+      ...jsonBody,
+      path: request.url,
+      timestamp: new Date().toISOString(),
+      error: exception,
+    };
 
     this.logger.error(exception, errorLog);
 
@@ -30,7 +34,7 @@ export class SwappErrorFilter implements ExceptionFilter {
 type ErrorLog = {
   message: string;
   statusCode: number;
-  timestamp: string;
   path: string;
+  timestamp: string;
   error: any;
 };

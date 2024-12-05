@@ -5,8 +5,8 @@ import { ExternalApiService } from "./external-api.service";
 export class SwapiService {
   constructor(private readonly externalApiService: ExternalApiService) {}
 
-  async getSwapiFilms(): Promise<SwapiFilm[]> {
-    return await this.getAll<SwapiFilm>("films");
+  async getSwapiFilms(search: string, page: number): Promise<SwapiFilm[]> {
+    return await this.getAll<SwapiFilm>("films", search, page);
   }
 
   async getSwapiFilm(id): Promise<SwapiFilm> {
@@ -53,9 +53,28 @@ export class SwapiService {
     return await this.getById("vehicles", id);
   }
 
-  private async getAll<T>(entityName: string): Promise<T[]> {
+  private async getAll<T>(
+    entityName: string,
+    search?: string,
+    page?: number,
+  ): Promise<T[]> {
+    const baseUrl = `https://swapi.dev/api/${entityName}/`;
+    const params = {
+      search,
+      page,
+    };
+
+    /* TBD */
+    const url = new URL(baseUrl);
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        url.searchParams.append(key, value?.toString());
+      }
+    });
+
     const swapiResponse = await this.externalApiService.fetch<SwapiResponse<T>>(
-      `https://swapi.dev/api/${entityName}`,
+      url.href,
     );
     return swapiResponse.results;
   }

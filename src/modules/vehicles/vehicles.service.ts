@@ -9,22 +9,22 @@ import { Vehicle } from "./vehicle.entity";
 export class VehiclesService {
   constructor(
     @InjectRepository(Vehicle)
-    private readonly filmsRepository: Repository<Vehicle>,
+    private readonly vehicleRepository: Repository<Vehicle>,
     private readonly swapiService: SwapiService,
   ) {}
 
   async findAll(dataFilter: Partial<SwapiVehicle>): Promise<SwapiVehicle[]> {
-    const dbFilms = await this.filmsRepository.find();
+    const dbFilms = await this.vehicleRepository.find();
 
     if (dbFilms && dbFilms.length > 0) {
       return dbFilms;
     }
 
-    const swapiVehicals = await this.swapiService.getSwapiVehicles();
+    const swapiVehicles = await this.swapiService.getSwapiVehicles();
 
-    await this.filmsRepository.save(swapiVehicals);
+    await this.vehicleRepository.save(swapiVehicles);
 
-    return filter(swapiVehicals, dataFilter);
+    return filter(swapiVehicles, dataFilter);
   }
 
   async findOne(id): Promise<SwapiVehicle> {
