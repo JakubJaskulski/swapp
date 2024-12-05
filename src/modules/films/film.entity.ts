@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class Film {
@@ -44,9 +44,16 @@ export class Film {
   @Column()
   edited: string;
 
-  @Column("text", { array: true, nullable: true })
+  @Column("text", { array: true, nullable: true, select: false })
   search: string[];
 
-  @Column()
+  @Column({ select: false })
   page: number;
+
+  @CreateDateColumn({
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP(6)",
+    select: false,
+  })
+  public createdAt?: Date;
 }

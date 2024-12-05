@@ -25,13 +25,19 @@ export class SpeciesService {
       return cachedFilms;
     }
 
-    const swapiFilms = await this.swapiService.getSwapiSpecies(search, page);
+    const swapiSpecies = await this.swapiService.getSwapiSpecies(search, page);
 
-    swapiFilms.forEach((swapiFilm) => {
-      this.speciesRepository.upsertWithArrayMerge(swapiFilm, "url", ["search"]);
+    swapiSpecies.forEach((oneSwapiSpecies) => {
+      this.speciesRepository.upsertWithArrayMerge(oneSwapiSpecies, "url", [
+        "search",
+      ]);
     });
 
-    return swapiFilms;
+    return swapiSpecies.map((oneSwapiSpecies) => {
+      delete oneSwapiSpecies["search"];
+      delete oneSwapiSpecies["page"];
+      return oneSwapiSpecies;
+    });
   }
 
   async findOne(id): Promise<SwapiSpecies> {

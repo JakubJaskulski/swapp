@@ -25,15 +25,22 @@ export class StarshipsService {
       return cachedFilms;
     }
 
-    const swapiFilms = await this.swapiService.getSwapiStarships(search, page);
+    const swapiStarships = await this.swapiService.getSwapiStarships(
+      search,
+      page,
+    );
 
-    swapiFilms.forEach((swapiFilm) => {
-      this.starshipRepository.upsertWithArrayMerge(swapiFilm, "url", [
+    swapiStarships.forEach((swapiStarship) => {
+      this.starshipRepository.upsertWithArrayMerge(swapiStarship, "url", [
         "search",
       ]);
     });
 
-    return swapiFilms;
+    return swapiStarships.map((oneSwapiStarship) => {
+      delete oneSwapiStarship["search"];
+      delete oneSwapiStarship["page"];
+      return oneSwapiStarship;
+    });
   }
 
   async findOne(id): Promise<SwapiStarship> {

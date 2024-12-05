@@ -25,18 +25,25 @@ export class CharactersService {
       return cachedFilms;
     }
 
-    const swapiFilms = await this.swapiService.getSwapiCharacters(search, page);
+    const swapiCharacters = await this.swapiService.getSwapiCharacters(
+      search,
+      page,
+    );
 
-    swapiFilms.forEach((swapiFilm) => {
-      this.charactersRepository.upsertWithArrayMerge(swapiFilm, "url", [
+    swapiCharacters.forEach((swapiCharacter) => {
+      this.charactersRepository.upsertWithArrayMerge(swapiCharacter, "url", [
         "search",
       ]);
     });
 
-    return swapiFilms;
+    return swapiCharacters.map((swapiCharacter) => {
+      delete swapiCharacter["search"];
+      delete swapiCharacter["page"];
+      return swapiCharacter;
+    });
   }
 
-  async findOne(id): Promise<SwapiCharacter> {
+  async findOne(id): Promise<Character> {
     return await this.swapiService.getSwapiCharacter(id);
   }
 }

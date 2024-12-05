@@ -25,13 +25,22 @@ export class VehiclesService {
       return cachedFilms;
     }
 
-    const swapiFilms = await this.swapiService.getSwapiVehicles(search, page);
+    const swapiVehicles = await this.swapiService.getSwapiVehicles(
+      search,
+      page,
+    );
 
-    swapiFilms.forEach((swapiFilm) => {
-      this.vehicleRepository.upsertWithArrayMerge(swapiFilm, "url", ["search"]);
+    swapiVehicles.forEach((swapiVehicle) => {
+      this.vehicleRepository.upsertWithArrayMerge(swapiVehicle, "url", [
+        "search",
+      ]);
     });
 
-    return swapiFilms;
+    return swapiVehicles.map((swapiVehicle) => {
+      delete swapiVehicle["search"];
+      delete swapiVehicle["page"];
+      return swapiVehicle;
+    });
   }
 
   async findOne(id): Promise<SwapiVehicle> {

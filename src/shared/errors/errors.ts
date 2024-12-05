@@ -14,3 +14,10 @@ type CallDetails = {
   statusCode: number;
   error: string;
 };
+
+export class DbCronError extends SwappError {
+  constructor(message: string) {
+    super(message);
+    this.name = "DbCronError";
+  }
+}

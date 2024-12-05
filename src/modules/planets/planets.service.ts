@@ -25,13 +25,19 @@ export class PlanetsService {
       return cachedFilms;
     }
 
-    const swapiFilms = await this.swapiService.getSwapiPlanets(search, page);
+    const swapiPlanets = await this.swapiService.getSwapiPlanets(search, page);
 
-    swapiFilms.forEach((swapiFilm) => {
-      this.planetRepository.upsertWithArrayMerge(swapiFilm, "url", ["search"]);
+    swapiPlanets.forEach((swapiPlanet) => {
+      this.planetRepository.upsertWithArrayMerge(swapiPlanet, "url", [
+        "search",
+      ]);
     });
 
-    return swapiFilms;
+    return swapiPlanets.map((swapiPlanet) => {
+      delete swapiPlanet["search"];
+      delete swapiPlanet["page"];
+      return swapiPlanet;
+    });
   }
 
   async findOne(id): Promise<SwapiPlanet> {

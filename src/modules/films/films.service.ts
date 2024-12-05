@@ -14,10 +14,7 @@ export class FilmsService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(
-    search: string,
-    page: number,
-  ): Promise<Omit<Film, "search" | "page">[]> {
+  async findAll(search: string, page: number): Promise<Film[]> {
     const cachedFilms = await this.filmsRepository.find({
       where: {
         search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),
@@ -35,10 +32,14 @@ export class FilmsService {
       this.filmsRepository.upsertWithArrayMerge(swapiFilm, "url", ["search"]);
     });
 
-    return swapiFilms;
+    return swapiFilms.map((swapiFilm) => {
+      delete swapiFilm["search"];
+      delete swapiFilm["page"];
+      return swapiFilm;
+    });
   }
 
-  async findOne(id): Promise<SwapiFilm> {
+  async findOne(id): Promise<Film> {
     return await this.swapiService.getSwapiFilm(id);
   }
 }

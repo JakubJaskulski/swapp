@@ -1,4 +1,4 @@
-import { SwapiError, SwappError } from "../shared/errors/errors";
+import { DbCronError, SwapiError, SwappError } from "../shared/errors/errors";
 import { ArgumentsHost, Catch, ExceptionFilter, Logger } from "@nestjs/common";
 import { Request, Response } from "express";
 
@@ -7,6 +7,15 @@ export class SwappErrorFilter implements ExceptionFilter {
   private readonly logger = new Logger(SwappErrorFilter.name);
 
   catch(exception: SwappError, host: ArgumentsHost) {
+    if (exception instanceof DbCronError) {
+      const dbCronErrorLog: ErrorLog = {
+        message: exception.message,
+        timestamp: new Date().toISOString(),
+        error: exception,
+      };
+      this.logger.error(dbCronErrorLog);
+    }
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -33,8 +42,8 @@ export class SwappErrorFilter implements ExceptionFilter {
 
 type ErrorLog = {
   message: string;
-  statusCode: number;
-  path: string;
+  statusCode?: number;
+  path?: string;
   timestamp: string;
   error: any;
 };
