@@ -12,75 +12,95 @@ export class SwapiService {
   baseUrl = this.configService.get<string>("SWAPI_BASE_API");
 
   async getSwapiFilms(search: string, page: number): Promise<SwapiFilm[]> {
-    return await this.getAll<SwapiFilm>("films", search, page);
+    return await this.getAll<SwapiFilm>({ entityName: "films", search, page });
   }
 
   async getSwapiFilm(id): Promise<SwapiFilm> {
-    return await this.getById<SwapiFilm>("films", id);
+    return await this.getById<SwapiFilm>({ entityName: "films", id });
   }
 
-  async getSwapiCharacters(): Promise<SwapiCharacter[]> {
-    return await this.getAll<SwapiCharacter>("people");
+  async getSwapiCharacters(
+    search: string,
+    page: number,
+  ): Promise<SwapiCharacter[]> {
+    return await this.getAll<SwapiCharacter>({
+      entityName: "people",
+      search,
+      page,
+    });
   }
 
   async getSwapiCharacter(id): Promise<SwapiCharacter> {
-    return await this.getById("people", id);
+    return await this.getById({ entityName: "people", id });
   }
 
-  async getSwapiPlanets(): Promise<SwapiPlanet[]> {
-    return await this.getAll<SwapiPlanet>("planets");
+  async getSwapiPlanets(search: string, page: number): Promise<SwapiPlanet[]> {
+    return await this.getAll<SwapiPlanet>({
+      entityName: "planets",
+      search,
+      page,
+    });
   }
 
   async getSwapiPlanet(id): Promise<SwapiPlanet> {
-    return await this.getById("planets", id);
+    return await this.getById({ entityName: "planets", id });
   }
 
-  async getSwapiSpecies(): Promise<SwapiSpecies[]> {
-    return await this.getAll<SwapiSpecies>("species");
+  async getSwapiSpecies(search: string, page: number): Promise<SwapiSpecies[]> {
+    return await this.getAll<SwapiSpecies>({
+      entityName: "species",
+      search,
+      page,
+    });
   }
 
   async getOneSwapiSpecies(id): Promise<SwapiSpecies> {
-    return await this.getById("species", id);
+    return await this.getById({ entityName: "species", id });
   }
 
-  async getSwapiStarships(): Promise<SwapiStarship[]> {
-    return await this.getAll<SwapiStarship>("starships");
+  async getSwapiStarships(
+    search: string,
+    page: number,
+  ): Promise<SwapiStarship[]> {
+    return await this.getAll<SwapiStarship>({
+      entityName: "starships",
+      search,
+      page,
+    });
   }
 
   async getSwapiStarship(id): Promise<SwapiStarship> {
-    return await this.getById("starships", id);
+    return await this.getById({ entityName: "starships", id });
   }
 
-  async getSwapiVehicles(): Promise<SwapiVehicle[]> {
-    return await this.getAll<SwapiVehicle>("vehicles");
+  async getSwapiVehicles(
+    search: string,
+    page: number,
+  ): Promise<SwapiVehicle[]> {
+    return await this.getAll<SwapiVehicle>({
+      entityName: "vehicles",
+      search,
+      page,
+    });
   }
 
   async getSwapiVehicle(id): Promise<SwapiVehicle> {
-    return await this.getById("vehicles", id);
+    return await this.getById({ entityName: "vehicles", id });
   }
 
-  private async getAll<T>(
-    entityName: string,
-    search?: string,
-    page?: number,
-  ): Promise<T[]> {
-    const url = this.buildSwapiUrl({ entityName, search, page });
+  private async getAll<T>(elements: UrlElements): Promise<T[]> {
+    const url = this.buildSwapiUrl(elements);
     const swapiResponse =
       await this.externalApiService.fetch<SwapiResponse<T>>(url);
     return swapiResponse.results;
   }
 
-  private async getById<T>(entityName: string, id: number): Promise<T> {
-    const url = this.buildSwapiUrl({ entityName, id });
+  private async getById<T>(elements: UrlElements): Promise<T> {
+    const url = this.buildSwapiUrl(elements);
     return await this.externalApiService.fetch<T>(url);
   }
 
-  private buildSwapiUrl(elements: {
-    entityName: string;
-    id?: number;
-    search?: string;
-    page?: number;
-  }) {
+  private buildSwapiUrl(elements: UrlElements) {
     const url = new URL(`${this.baseUrl}/${elements.entityName}`);
 
     if (elements.id) {
@@ -102,6 +122,13 @@ export class SwapiService {
     return url.href;
   }
 }
+
+type UrlElements = {
+  entityName: string;
+  id?: number;
+  search?: string;
+  page?: number;
+};
 
 export type SwapiResponse<T> = {
   count: number;
