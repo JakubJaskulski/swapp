@@ -11,12 +11,12 @@ export class FilmsController {
     @Query("search") search: string,
     @Query("page") page: number,
   ): Promise<Omit<Film, "search" | "page">[]> {
-    return await this.filmService.findAll(search, page);
+    return await this.filmService.getFilms(search, page);
   }
 
   @Get("id/:id")
-  async getFilm(@Param("id") id: string): Promise<Film> {
-    return await this.filmService.findOne(id);
+  async getFilm(@Param("id") id: number): Promise<Film> {
+    return await this.filmService.getFilmById(id);
   }
 
   @Get("unique-crawl-words")

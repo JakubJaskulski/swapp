@@ -11,11 +11,11 @@ export class PlanetsController {
     @Query("search") search: string,
     @Query("page") page: number,
   ): Promise<Planet[]> {
-    return await this.planetService.findAll(search, page);
+    return await this.planetService.getPlanets(search, page);
   }
 
-  @Get(":id")
-  async getPlanet(@Param("id") id: string): Promise<Planet> {
-    return await this.planetService.findOne(id);
+  @Get("id/:id")
+  async getPlanet(@Param("id") id: number): Promise<Planet> {
+    return await this.planetService.getPlanetById(id);
   }
 }

@@ -1,46 +1,25 @@
 import { Injectable } from "@nestjs/common";
-import { SwapiPlanet, SwapiService } from "../../shared/swapi/swapi.service";
+import { SwapiService } from "../../shared/swapi/swapi.service";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Raw } from "typeorm";
 import { Planet } from "./planet.entity";
 import { BaseRepository } from "../../repositories/swapp-repository";
+import { GenericEntityService } from "../generic-entity.service";
 
 @Injectable()
-export class PlanetsService {
+export class PlanetsService extends GenericEntityService<Planet> {
   constructor(
     @InjectRepository(Planet)
     private readonly planetRepository: BaseRepository<Planet>,
-    private readonly swapiService: SwapiService,
-  ) {}
-
-  async findAll(search?: string, page?: number): Promise<SwapiPlanet[]> {
-    const cachedFilms = await this.planetRepository.find({
-      where: {
-        search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),
-        page,
-      },
-    });
-
-    if (cachedFilms && cachedFilms.length > 0) {
-      return cachedFilms;
-    }
-
-    const swapiPlanets = await this.swapiService.getSwapiPlanets(search, page);
-
-    swapiPlanets.forEach((swapiPlanet) => {
-      this.planetRepository.upsertWithArrayMerge(swapiPlanet, "url", [
-        "search",
-      ]);
-    });
-
-    return swapiPlanets.map((swapiPlanet) => {
-      delete swapiPlanet["search"];
-      delete swapiPlanet["page"];
-      return swapiPlanet;
-    });
+    swapiService: SwapiService,
+  ) {
+    super(planetRepository, swapiService);
   }
 
-  async findOne(id): Promise<SwapiPlanet> {
-    return await this.swapiService.getSwapiPlanet(id);
+  async getPlanets(search?: string, page?: number): Promise<Planet[]> {
+    return this.findAll(Planet.swapiName, search, page);
+  }
+
+  async getPlanetById(id: number): Promise<Planet> {
+    return this.findOne(Planet.swapiName, id);
   }
 }

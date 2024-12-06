@@ -11,11 +11,11 @@ export class VehiclesController {
     @Query("search") search: string,
     @Query("page") page: number,
   ): Promise<Vehicle[]> {
-    return await this.vehicleService.findAll(search, page);
+    return await this.vehicleService.getVehicles(search, page);
   }
 
-  @Get(":id")
-  async getVehicle(@Param("id") id: string): Promise<Vehicle> {
-    return await this.vehicleService.findOne(id);
+  @Get("id/:id")
+  async getVehicle(@Param("id") id: number): Promise<Vehicle> {
+    return await this.vehicleService.getVehicleById(id);
   }
 }

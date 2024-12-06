@@ -1,49 +1,25 @@
 import { Injectable } from "@nestjs/common";
-import { SwapiStarship, SwapiService } from "../../shared/swapi/swapi.service";
+import { SwapiService } from "../../shared/swapi/swapi.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Starship } from "./starship.entity";
 import { BaseRepository } from "../../repositories/swapp-repository";
-import { Raw } from "typeorm";
+import { GenericEntityService } from "../generic-entity.service";
 
 @Injectable()
-export class StarshipsService {
+export class StarshipsService extends GenericEntityService<Starship> {
   constructor(
     @InjectRepository(Starship)
     private readonly starshipRepository: BaseRepository<Starship>,
-    private readonly swapiService: SwapiService,
-  ) {}
-
-  async findAll(search?: string, page?: number): Promise<SwapiStarship[]> {
-    const cachedFilms = await this.starshipRepository.find({
-      where: {
-        search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),
-        page,
-      },
-    });
-
-    if (cachedFilms && cachedFilms.length > 0) {
-      return cachedFilms;
-    }
-
-    const swapiStarships = await this.swapiService.getSwapiStarships(
-      search,
-      page,
-    );
-
-    swapiStarships.forEach((swapiStarship) => {
-      this.starshipRepository.upsertWithArrayMerge(swapiStarship, "url", [
-        "search",
-      ]);
-    });
-
-    return swapiStarships.map((oneSwapiStarship) => {
-      delete oneSwapiStarship["search"];
-      delete oneSwapiStarship["page"];
-      return oneSwapiStarship;
-    });
+    swapiService: SwapiService,
+  ) {
+    super(starshipRepository, swapiService);
   }
 
-  async findOne(id): Promise<SwapiStarship> {
-    return await this.swapiService.getSwapiStarship(id);
+  async getStarships(search?: string, page?: number): Promise<Starship[]> {
+    return this.findAll(Starship.swapiName, search, page);
+  }
+
+  async getStarshipById(id: number): Promise<Starship> {
+    return this.findOne(Starship.swapiName, id);
   }
 }

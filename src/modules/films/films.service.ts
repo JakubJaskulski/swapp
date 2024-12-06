@@ -1,52 +1,33 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { SwapiService } from "../../shared/swapi/swapi.service";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Raw } from "typeorm";
 import { Film } from "./film.entity";
 import { BaseRepository } from "../../repositories/swapp-repository";
 import { CharactersService } from "../characters/characters.service";
+import { GenericEntityService } from "../generic-entity.service";
 
 @Injectable()
-export class FilmsService {
+export class FilmsService extends GenericEntityService<Film> {
   constructor(
     @InjectRepository(Film)
     @Inject("FilmRepository")
     private readonly filmsRepository: BaseRepository<Film>,
-    private readonly swapiService: SwapiService,
+    swapiService: SwapiService,
     private readonly charactersService: CharactersService,
-  ) {}
-
-  async findAll(search?: string, page?: number): Promise<Film[]> {
-    const cachedFilms = await this.filmsRepository.find({
-      where: {
-        search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),
-        page,
-      },
-    });
-
-    if (cachedFilms && cachedFilms.length > 0) {
-      return cachedFilms;
-    }
-
-    const swapiFilms = await this.swapiService.getSwapiFilms(search, page);
-
-    swapiFilms.forEach((swapiFilm) => {
-      this.filmsRepository.upsertWithArrayMerge(swapiFilm, "url", ["search"]);
-    });
-
-    return swapiFilms.map((swapiFilm) => {
-      delete swapiFilm["search"];
-      delete swapiFilm["page"];
-      return swapiFilm;
-    });
+  ) {
+    super(filmsRepository, swapiService);
   }
 
-  async findOne(id): Promise<Film> {
-    return await this.swapiService.getSwapiFilm(id);
+  async getFilms(search?: string, page?: number): Promise<Film[]> {
+    return this.findAll(Film.swapiName, search, page);
+  }
+
+  async getFilmById(id: number): Promise<Film> {
+    return this.findOne(Film.swapiName, id);
   }
 
   async getUniqueWordsFromOpeningCrawls(): Promise<OccurrencesArray> {
-    const films = await this.findAll();
+    const films = await this.getFilms();
     const combinedCrawlText = films
       .reduce((combined, movie) => combined + movie.opening_crawl + " ", "")
       .trim();
@@ -70,12 +51,12 @@ export class FilmsService {
   async getCharacterNameWithMostOccurrencesInOpeningCrawls(): Promise<
     string | string[]
   > {
-    const films = await this.findAll();
+    const films = await this.getFilms();
     const combinedCrawlText = films
       .reduce((combined, movie) => combined + movie.opening_crawl + " ", "")
       .trim();
 
-    const characters = await this.charactersService.findAll();
+    const characters = await this.charactersService.getCharacters();
     const characterNames = characters.map((character) => character.name);
 
     const occurrences = this.countOccurrences(

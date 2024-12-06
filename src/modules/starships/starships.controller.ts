@@ -11,11 +11,11 @@ export class StarshipsController {
     @Query("search") search: string,
     @Query("page") page: number,
   ): Promise<Starship[]> {
-    return await this.starshipService.findAll(search, page);
+    return await this.starshipService.getStarships(search, page);
   }
 
-  @Get(":id")
-  async getStarship(@Param("id") id: string): Promise<Starship> {
-    return await this.starshipService.findOne(id);
+  @Get("id/:id")
+  async getStarship(@Param("id") id: number): Promise<Starship> {
+    return await this.starshipService.getStarshipById(id);
   }
 }
