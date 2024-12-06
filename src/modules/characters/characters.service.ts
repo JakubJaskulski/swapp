@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { SwapiCharacter, SwapiService } from "../../shared/swapi/swapi.service";
+import { SwapiService } from "../../shared/swapi/swapi.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Raw } from "typeorm";
 import { Character } from "./character.entity";
@@ -13,7 +13,7 @@ export class CharactersService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(search: string, page: number): Promise<Character[]> {
+  async findAll(search?: string, page?: number): Promise<Character[]> {
     const cachedFilms = await this.charactersRepository.find({
       where: {
         search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),

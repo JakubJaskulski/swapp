@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { SwapiFilm, SwapiService } from "../../shared/swapi/swapi.service";
+import { SwapiService } from "../../shared/swapi/swapi.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Raw } from "typeorm";
 import { Film } from "./film.entity";
@@ -14,7 +14,7 @@ export class FilmsService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(search: string, page: number): Promise<Film[]> {
+  async findAll(search?: string, page?: number): Promise<Film[]> {
     const cachedFilms = await this.filmsRepository.find({
       where: {
         search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),
@@ -41,5 +41,27 @@ export class FilmsService {
 
   async findOne(id): Promise<Film> {
     return await this.swapiService.getSwapiFilm(id);
+  }
+
+  async getUniqueWordsFromOpeningCrawls(): Promise<{ [p: string]: number }[]> {
+    const films = await this.findAll();
+    const combinedCrawlText = films
+      .reduce((combined, movie) => combined + movie.opening_crawl + " ", "")
+      .trim();
+    return this.getUniqueWords(combinedCrawlText);
+  }
+
+  private getUniqueWords(text: string): { [p: string]: number }[] {
+    const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+
+    const wordMap = new Map<string, number>();
+
+    words.forEach((word) => {
+      wordMap.set(word, (wordMap.get(word) || 0) + 1);
+    });
+
+    return Array.from(wordMap.entries()).map(([word, count]) => ({
+      [word]: count,
+    }));
   }
 }

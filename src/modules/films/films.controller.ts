@@ -14,8 +14,13 @@ export class FilmsController {
     return await this.filmService.findAll(search, page);
   }
 
-  @Get(":id")
+  @Get("id/:id")
   async getFilm(@Param("id") id: string): Promise<Film> {
     return await this.filmService.findOne(id);
+  }
+
+  @Get("unique-crawl-words")
+  async getUniqueWordsFromOpeningCrawls(): Promise<{ [p: string]: number }[]> {
+    return await this.filmService.getUniqueWordsFromOpeningCrawls();
   }
 }

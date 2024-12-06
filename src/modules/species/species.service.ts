@@ -13,7 +13,7 @@ export class SpeciesService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(search: string, page: number): Promise<SwapiSpecies[]> {
+  async findAll(search?: string, page?: number): Promise<SwapiSpecies[]> {
     const cachedFilms = await this.speciesRepository.find({
       where: {
         search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),

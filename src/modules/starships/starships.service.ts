@@ -13,7 +13,7 @@ export class StarshipsService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(search: string, page: number): Promise<SwapiStarship[]> {
+  async findAll(search?: string, page?: number): Promise<SwapiStarship[]> {
     const cachedFilms = await this.starshipRepository.find({
       where: {
         search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),

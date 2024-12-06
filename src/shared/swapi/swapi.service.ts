@@ -11,7 +11,7 @@ export class SwapiService {
 
   baseUrl = this.configService.get<string>("SWAPI_BASE_API");
 
-  async getSwapiFilms(search: string, page: number): Promise<SwapiFilm[]> {
+  async getSwapiFilms(search?: string, page?: number): Promise<SwapiFilm[]> {
     return await this.getAll<SwapiFilm>({ entityName: "films", search, page });
   }
 
@@ -34,7 +34,10 @@ export class SwapiService {
     return await this.getById({ entityName: "people", id });
   }
 
-  async getSwapiPlanets(search: string, page: number): Promise<SwapiPlanet[]> {
+  async getSwapiPlanets(
+    search?: string,
+    page?: number,
+  ): Promise<SwapiPlanet[]> {
     return await this.getAll<SwapiPlanet>({
       entityName: "planets",
       search,
@@ -46,7 +49,10 @@ export class SwapiService {
     return await this.getById({ entityName: "planets", id });
   }
 
-  async getSwapiSpecies(search: string, page: number): Promise<SwapiSpecies[]> {
+  async getSwapiSpecies(
+    search?: string,
+    page?: number,
+  ): Promise<SwapiSpecies[]> {
     return await this.getAll<SwapiSpecies>({
       entityName: "species",
       search,

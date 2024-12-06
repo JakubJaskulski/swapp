@@ -13,7 +13,7 @@ export class PlanetsService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(search: string, page: number): Promise<SwapiPlanet[]> {
+  async findAll(search?: string, page?: number): Promise<SwapiPlanet[]> {
     const cachedFilms = await this.planetRepository.find({
       where: {
         search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),

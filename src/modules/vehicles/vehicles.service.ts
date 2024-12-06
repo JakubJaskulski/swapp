@@ -13,7 +13,7 @@ export class VehiclesService {
     private readonly swapiService: SwapiService,
   ) {}
 
-  async findAll(search: string, page: number): Promise<SwapiVehicle[]> {
+  async findAll(search?: string, page?: number): Promise<SwapiVehicle[]> {
     const cachedFilms = await this.vehicleRepository.find({
       where: {
         search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),
