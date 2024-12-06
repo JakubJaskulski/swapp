@@ -9,7 +9,6 @@ import { Planet } from "../modules/planets/planet.entity";
 import { Species } from "../modules/species/species.entity";
 import { Starship } from "../modules/starships/starship.entity";
 import { Vehicle } from "../modules/vehicles/vehicle.entity";
-import { DbCronError } from "../shared/errors/errors";
 
 @Injectable()
 export class CleanupService {
@@ -55,7 +54,7 @@ export class CleanupService {
       );
       this.logger.log("Successfully deleted old cache records.");
     } catch (error) {
-      throw new DbCronError(error);
+      this.logger.error(`Failed to delete old cache records: ${error.message}`);
     }
   }
 }

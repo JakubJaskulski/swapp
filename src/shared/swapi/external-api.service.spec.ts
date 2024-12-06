@@ -1,9 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ExternalApiService } from "./external-api.service";
 import { HttpService } from "@nestjs/axios";
-import { SwapiError } from "../errors/errors";
-import { HttpStatus } from "@nestjs/common";
-import { AxiosError } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
+import { ExternalApiService } from "./external-api.service";
+import { HttpException, HttpStatus } from "@nestjs/common";
 
 describe("ExternalApiService", () => {
   let service: ExternalApiService;
@@ -28,58 +27,60 @@ describe("ExternalApiService", () => {
     httpService = module.get<HttpService>(HttpService);
   });
 
+  it("should be defined", () => {
+    expect(service).toBeDefined();
+  });
+
   describe("fetch", () => {
-    it("should return data when the request is successful", async () => {
-      const mockData = { key: "value" };
-      jest
-        .spyOn(httpService.axiosRef, "get")
-        .mockResolvedValueOnce({ data: mockData });
+    const url = "https://api.example.com/resource";
 
-      const result = await service.fetch<typeof mockData>("http://example.com");
-      expect(result).toEqual(mockData);
+    it("should return data on successful fetch", async () => {
+      const mockResponse: AxiosResponse = {
+        data: { key: "value" },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: { headers: null },
+      };
+      jest.spyOn(httpService.axiosRef, "get").mockResolvedValue(mockResponse);
+
+      const result = await service.fetch<{ key: string }>(url);
+      expect(result).toEqual(mockResponse.data);
     });
 
-    it("should throw a SwapiError with appropriate status and message for Axios errors", async () => {
-      const axiosError: Partial<AxiosError> = {
+    it("should throw an HttpException on Axios error", async () => {
+      const axiosError: AxiosError = {
+        name: "",
+        stack: "",
+        isAxiosError: true,
         response: {
-          status: HttpStatus.NOT_FOUND,
-          data: { message: "Resource not found" },
-          statusText: null,
-          headers: null,
-          config: null,
+          status: HttpStatus.BAD_REQUEST,
+          statusText: "Bad Request",
+          data: { message: "Bad Request" },
+          headers: {},
+          config: { headers: null },
         },
-        isAxiosError: true,
+        message: "Request failed",
+        config: { headers: null },
+        toJSON: () => ({}),
       };
-      jest.spyOn(httpService.axiosRef, "get").mockRejectedValueOnce(axiosError);
+      jest.spyOn(httpService.axiosRef, "get").mockRejectedValue(axiosError);
 
-      await expect(service.fetch("http://example.com")).rejects.toThrowError(
-        new SwapiError(HttpStatus.NOT_FOUND, "Resource not found"),
+      await expect(service.fetch(url)).rejects.toThrow(HttpException);
+      await expect(service.fetch(url)).rejects.toThrow(
+        `Failed to fetch data from external API: ${axiosError.message}`,
       );
     });
 
-    it("should throw a SwapiError with default status and message if AxiosError has no response", async () => {
-      const axiosError: Partial<AxiosError> = {
-        isAxiosError: true,
-        response: undefined,
-      };
-      jest.spyOn(httpService.axiosRef, "get").mockRejectedValueOnce(axiosError);
-
-      await expect(service.fetch("http://example.com")).rejects.toThrowError(
-        new SwapiError(HttpStatus.BAD_GATEWAY, "Failed to fetch data"),
-      );
-    });
-
-    it("should throw a SwapiError with INTERNAL_SERVER_ERROR for non-Axios errors", async () => {
-      const nonAxiosError = new Error("Unexpected error");
+    it("should throw an HttpException on unexpected error", async () => {
+      const unexpectedError = new Error("Unexpected error occurred");
       jest
         .spyOn(httpService.axiosRef, "get")
-        .mockRejectedValueOnce(nonAxiosError);
+        .mockRejectedValue(unexpectedError);
 
-      await expect(service.fetch("http://example.com")).rejects.toThrowError(
-        new SwapiError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Error: Unexpected error",
-        ),
+      await expect(service.fetch(url)).rejects.toThrow(HttpException);
+      await expect(service.fetch(url)).rejects.toThrow(
+        "Unexpected error occurred while fetching data.",
       );
     });
   });
