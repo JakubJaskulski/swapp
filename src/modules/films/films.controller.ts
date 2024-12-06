@@ -23,4 +23,11 @@ export class FilmsController {
   async getUniqueWordsFromOpeningCrawls(): Promise<{ [p: string]: number }[]> {
     return await this.filmService.getUniqueWordsFromOpeningCrawls();
   }
+
+  @Get("character-most-occurrences")
+  async getCharacterNameWithMostOccurrencesInOpeningCrawls(): Promise<
+    string | string[]
+  > {
+    return await this.filmService.getCharacterNameWithMostOccurrencesInOpeningCrawls();
+  }
 }

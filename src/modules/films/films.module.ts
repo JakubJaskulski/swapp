@@ -6,9 +6,10 @@ import { Film } from "./film.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { BaseRepository } from "../../repositories/swapp-repository";
+import { CharactersModule } from "../characters/characters.module";
 
 @Module({
-  imports: [SwapiModule, TypeOrmModule.forFeature([Film])],
+  imports: [SwapiModule, CharactersModule, TypeOrmModule.forFeature([Film])],
   controllers: [FilmsController],
   providers: [
     FilmsService,

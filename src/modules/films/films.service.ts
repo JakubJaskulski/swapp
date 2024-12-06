@@ -4,6 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Raw } from "typeorm";
 import { Film } from "./film.entity";
 import { BaseRepository } from "../../repositories/swapp-repository";
+import { CharactersService } from "../characters/characters.service";
 
 @Injectable()
 export class FilmsService {
@@ -12,6 +13,7 @@ export class FilmsService {
     @Inject("FilmRepository")
     private readonly filmsRepository: BaseRepository<Film>,
     private readonly swapiService: SwapiService,
+    private readonly charactersService: CharactersService,
   ) {}
 
   async findAll(search?: string, page?: number): Promise<Film[]> {
@@ -43,7 +45,7 @@ export class FilmsService {
     return await this.swapiService.getSwapiFilm(id);
   }
 
-  async getUniqueWordsFromOpeningCrawls(): Promise<{ [p: string]: number }[]> {
+  async getUniqueWordsFromOpeningCrawls(): Promise<OccurrencesArray> {
     const films = await this.findAll();
     const combinedCrawlText = films
       .reduce((combined, movie) => combined + movie.opening_crawl + " ", "")
@@ -51,7 +53,7 @@ export class FilmsService {
     return this.getUniqueWords(combinedCrawlText);
   }
 
-  private getUniqueWords(text: string): { [p: string]: number }[] {
+  private getUniqueWords(text: string): OccurrencesArray {
     const words = text.toLowerCase().match(/\b\w+\b/g) || [];
 
     const wordMap = new Map<string, number>();
@@ -64,4 +66,45 @@ export class FilmsService {
       [word]: count,
     }));
   }
+
+  async getCharacterNameWithMostOccurrencesInOpeningCrawls(): Promise<
+    string | string[]
+  > {
+    const films = await this.findAll();
+    const combinedCrawlText = films
+      .reduce((combined, movie) => combined + movie.opening_crawl + " ", "")
+      .trim();
+
+    const characters = await this.charactersService.findAll();
+    const characterNames = characters.map((character) => character.name);
+
+    const occurrences = this.countOccurrences(
+      combinedCrawlText,
+      characterNames,
+    );
+
+    const maxOccurrences = Math.max(
+      ...occurrences.flatMap((occurrence) => Object.values(occurrence)),
+    );
+
+    const maxOccurrencesName = occurrences
+      .filter((obj) => Object.values(obj).includes(maxOccurrences))
+      .map((occurrence) => Object.keys(occurrence)[0]);
+
+    return maxOccurrencesName.length === 1
+      ? maxOccurrencesName[0]
+      : maxOccurrencesName;
+  }
+
+  private countOccurrences(text: string, words: string[]): OccurrencesArray {
+    return words.map((phrase) => {
+      const escapedPhrase = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+      const regex = new RegExp(`\\b${escapedPhrase}\\b`, "gi");
+
+      const matches = text.match(regex);
+      return { [phrase]: matches ? matches.length : 0 };
+    });
+  }
 }
+
+type OccurrencesArray = { [p: string]: number }[];

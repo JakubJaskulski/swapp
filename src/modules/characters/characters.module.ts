@@ -19,5 +19,6 @@ import { DataSource } from "typeorm";
       inject: [DataSource],
     },
   ],
+  exports: [CharactersService],
 })
 export class CharactersModule {}
