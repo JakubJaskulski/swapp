@@ -2,6 +2,8 @@ import { Entity, Column, PrimaryColumn, CreateDateColumn } from "typeorm";
 
 @Entity()
 export class Character {
+  static swapiName = "people";
+
   @PrimaryColumn()
   url: string;
 

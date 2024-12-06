@@ -15,7 +15,7 @@ export class CharactersController {
   }
 
   @Get(":id")
-  async getCharacter(@Param("id") id: string): Promise<Character> {
+  async getCharacter(@Param("id") id: number): Promise<Character> {
     return await this.characterService.getCharacterById(id);
   }
 }

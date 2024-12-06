@@ -11,7 +11,7 @@ export abstract class GenericEntityService<T extends SwapiResource> {
   ) {}
 
   async findAll(
-    entityClass: { new (): T },
+    entityName: string,
     search?: string,
     page?: number,
   ): Promise<T[]> {
@@ -38,7 +38,7 @@ export abstract class GenericEntityService<T extends SwapiResource> {
       return cachedEntities;
     }
 
-    const swapiEntities = await this.swapiService.getAll<T>(entityClass.name, {
+    const swapiEntities = await this.swapiService.getAll<T>(entityName, {
       search,
       page,
     });
@@ -56,7 +56,10 @@ export abstract class GenericEntityService<T extends SwapiResource> {
     });
   }
 
-  async findOne(entityClass: { new (): T }, id: number): Promise<T> {
-    return await this.swapiService.getById<T>(entityClass.name, { id });
+  async findOne<T extends SwapiResource>(
+    entityName: string,
+    id: number,
+  ): Promise<T> {
+    return await this.swapiService.getById<T>(entityName, { id });
   }
 }

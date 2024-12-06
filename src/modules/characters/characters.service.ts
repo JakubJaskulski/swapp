@@ -15,11 +15,11 @@ export class CharactersService extends GenericEntityService<Character> {
     super(characterRepository, swapiService);
   }
 
-  async getCharacters(search?: string, page?: number) {
-    return this.findAll(Character, search, page);
+  async getCharacters(search?: string, page?: number): Promise<Character[]> {
+    return this.findAll(Character.swapiName, search, page);
   }
 
-  async getCharacterById(id: string) {
-    return this.findOne(Character, id);
+  async getCharacterById(id: number): Promise<Character> {
+    return this.findOne(Character.swapiName, id);
   }
 }
