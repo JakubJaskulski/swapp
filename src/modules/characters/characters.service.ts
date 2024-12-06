@@ -1,49 +1,25 @@
 import { Injectable } from "@nestjs/common";
-import { SwapiService } from "../../shared/swapi/swapi.service";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Raw } from "typeorm";
 import { Character } from "./character.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { SwapiService } from "../../shared/swapi/swapi.service";
+import { GenericEntityService } from "../generic-entity.service";
 import { BaseRepository } from "../../repositories/swapp-repository";
 
 @Injectable()
-export class CharactersService {
+export class CharactersService extends GenericEntityService<Character> {
   constructor(
     @InjectRepository(Character)
-    private readonly charactersRepository: BaseRepository<Character>,
-    private readonly swapiService: SwapiService,
-  ) {}
-
-  async findAll(search?: string, page?: number): Promise<Character[]> {
-    const cachedFilms = await this.charactersRepository.find({
-      where: {
-        search: Raw((alias) => `:tag = ANY(${alias})`, { tag: search }),
-        page,
-      },
-    });
-
-    if (cachedFilms && cachedFilms.length > 0) {
-      return cachedFilms;
-    }
-
-    const swapiCharacters = await this.swapiService.getSwapiCharacters(
-      search,
-      page,
-    );
-
-    swapiCharacters.forEach((swapiCharacter) => {
-      this.charactersRepository.upsertWithArrayMerge(swapiCharacter, "url", [
-        "search",
-      ]);
-    });
-
-    return swapiCharacters.map((swapiCharacter) => {
-      delete swapiCharacter["search"];
-      delete swapiCharacter["page"];
-      return swapiCharacter;
-    });
+    private readonly characterRepository: BaseRepository<Character>,
+    swapiService: SwapiService,
+  ) {
+    super(characterRepository, swapiService);
   }
 
-  async findOne(id): Promise<Character> {
-    return await this.swapiService.getSwapiCharacter(id);
+  async getCharacters(search?: string, page?: number) {
+    return this.findAll(Character, search, page);
+  }
+
+  async getCharacterById(id: string) {
+    return this.findOne(Character, id);
   }
 }

@@ -11,91 +11,94 @@ export class SwapiService {
 
   baseUrl = this.configService.get<string>("SWAPI_BASE_API");
 
-  async getSwapiFilms(search?: string, page?: number): Promise<SwapiFilm[]> {
-    return await this.getAll<SwapiFilm>({ entityName: "films", search, page });
-  }
+  // async getSwapiFilms(search?: string, page?: number): Promise<SwapiFilm[]> {
+  //   return await this.getAll<SwapiFilm>({ entityName: "films", search, page });
+  // }
+  //
+  // async getSwapiFilm(id): Promise<SwapiFilm> {
+  //   return await this.getById<SwapiFilm>({ entityName: "films", id });
+  // }
+  //
+  // async getSwapiCharacters(
+  //   search: string,
+  //   page: number,
+  // ): Promise<SwapiCharacter[]> {
+  //   return await this.getAll<SwapiCharacter>({
+  //     entityName: "people",
+  //     search,
+  //     page,
+  //   });
+  // }
+  //
+  // async getSwapiCharacter(id): Promise<SwapiCharacter> {
+  //   return await this.getById({ entityName: "people", id });
+  // }
+  //
+  // async getSwapiPlanets(
+  //   search?: string,
+  //   page?: number,
+  // ): Promise<SwapiPlanet[]> {
+  //   return await this.getAll<SwapiPlanet>({
+  //     entityName: "planets",
+  //     search,
+  //     page,
+  //   });
+  // }
+  //
+  // async getSwapiPlanet(id): Promise<SwapiPlanet> {
+  //   return await this.getById({ entityName: "planets", id });
+  // }
+  //
+  // async getSwapiSpecies(
+  //   search?: string,
+  //   page?: number,
+  // ): Promise<SwapiSpecies[]> {
+  //   return await this.getAll<SwapiSpecies>({
+  //     entityName: "species",
+  //     search,
+  //     page,
+  //   });
+  // }
+  //
+  // async getOneSwapiSpecies(id): Promise<SwapiSpecies> {
+  //   return await this.getById({ entityName: "species", id });
+  // }
+  //
+  // async getSwapiStarships(
+  //   search: string,
+  //   page: number,
+  // ): Promise<SwapiStarship[]> {
+  //   return await this.getAll<SwapiStarship>({
+  //     entityName: "starships",
+  //     search,
+  //     page,
+  //   });
+  // }
+  //
+  // async getSwapiStarship(id): Promise<SwapiStarship> {
+  //   return await this.getById({ entityName: "starships", id });
+  // }
+  //
+  // async getSwapiVehicles(
+  //   search: string,
+  //   page: number,
+  // ): Promise<SwapiVehicle[]> {
+  //   return await this.getAll<SwapiVehicle>({
+  //     entityName: "vehicles",
+  //     search,
+  //     page,
+  //   });
+  // }
+  //
+  // async getSwapiVehicle(id): Promise<SwapiVehicle> {
+  //   return await this.getById({ entityName: "vehicles", id });
+  // }
 
-  async getSwapiFilm(id): Promise<SwapiFilm> {
-    return await this.getById<SwapiFilm>({ entityName: "films", id });
-  }
-
-  async getSwapiCharacters(
-    search: string,
-    page: number,
-  ): Promise<SwapiCharacter[]> {
-    return await this.getAll<SwapiCharacter>({
-      entityName: "people",
-      search,
-      page,
-    });
-  }
-
-  async getSwapiCharacter(id): Promise<SwapiCharacter> {
-    return await this.getById({ entityName: "people", id });
-  }
-
-  async getSwapiPlanets(
-    search?: string,
-    page?: number,
-  ): Promise<SwapiPlanet[]> {
-    return await this.getAll<SwapiPlanet>({
-      entityName: "planets",
-      search,
-      page,
-    });
-  }
-
-  async getSwapiPlanet(id): Promise<SwapiPlanet> {
-    return await this.getById({ entityName: "planets", id });
-  }
-
-  async getSwapiSpecies(
-    search?: string,
-    page?: number,
-  ): Promise<SwapiSpecies[]> {
-    return await this.getAll<SwapiSpecies>({
-      entityName: "species",
-      search,
-      page,
-    });
-  }
-
-  async getOneSwapiSpecies(id): Promise<SwapiSpecies> {
-    return await this.getById({ entityName: "species", id });
-  }
-
-  async getSwapiStarships(
-    search: string,
-    page: number,
-  ): Promise<SwapiStarship[]> {
-    return await this.getAll<SwapiStarship>({
-      entityName: "starships",
-      search,
-      page,
-    });
-  }
-
-  async getSwapiStarship(id): Promise<SwapiStarship> {
-    return await this.getById({ entityName: "starships", id });
-  }
-
-  async getSwapiVehicles(
-    search: string,
-    page: number,
-  ): Promise<SwapiVehicle[]> {
-    return await this.getAll<SwapiVehicle>({
-      entityName: "vehicles",
-      search,
-      page,
-    });
-  }
-
-  async getSwapiVehicle(id): Promise<SwapiVehicle> {
-    return await this.getById({ entityName: "vehicles", id });
-  }
-
-  private async getAll<T>(elements: UrlElements): Promise<T[]> {
-    const url = this.buildSwapiUrl(elements);
+  async getAll<T extends SwapiResource>(
+    entityName: string,
+    elements: UrlElements,
+  ): Promise<T[]> {
+    const url = this.buildSwapiUrl(entityName, elements);
     const swapiResponse =
       await this.externalApiService.fetch<SwapiResponse<T>>(url);
 
@@ -104,13 +107,16 @@ export class SwapiService {
     });
   }
 
-  private async getById<T>(elements: UrlElements): Promise<T> {
-    const url = this.buildSwapiUrl(elements);
+  async getById<T extends SwapiResource>(
+    entityName: string,
+    elements: UrlElements,
+  ): Promise<T> {
+    const url = this.buildSwapiUrl(entityName, elements);
     return await this.externalApiService.fetch<T>(url);
   }
 
-  private buildSwapiUrl(elements: UrlElements) {
-    const url = new URL(`${this.baseUrl}/${elements.entityName}`);
+  private buildSwapiUrl(entityName: string, elements: UrlElements) {
+    const url = new URL(`${this.baseUrl}/${entityName}`);
 
     if (elements.id) {
       url.pathname = `${url.pathname}/${elements.id}`;
@@ -133,7 +139,7 @@ export class SwapiService {
 }
 
 type UrlElements = {
-  entityName: string;
+  // entityName: string;
   id?: number;
   search?: string;
   page?: number;

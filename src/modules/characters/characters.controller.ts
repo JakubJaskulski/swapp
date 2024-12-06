@@ -11,11 +11,11 @@ export class CharactersController {
     @Query("search") search: string,
     @Query("page") page: number,
   ): Promise<Character[]> {
-    return await this.characterService.findAll(search, page);
+    return await this.characterService.getCharacters(search, page);
   }
 
   @Get(":id")
   async getCharacter(@Param("id") id: string): Promise<Character> {
-    return await this.characterService.findOne(id);
+    return await this.characterService.getCharacterById(id);
   }
 }

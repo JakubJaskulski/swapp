@@ -1,6 +1,7 @@
 import { Repository, EntityTarget, DataSource } from "typeorm";
+import { SwapiResource } from "../shared/swapi/swapi.service";
 
-export class BaseRepository<T> extends Repository<T> {
+export class BaseRepository<T extends SwapiResource> extends Repository<T> {
   constructor(entity: EntityTarget<T>, dataSource: DataSource) {
     super(entity, dataSource.createEntityManager());
   }
