@@ -9,7 +9,7 @@ import {
   ApiQuery,
 } from "@nestjs/swagger";
 
-@Controller("starship")
+@Controller("starships")
 export class StarshipsController {
   constructor(private readonly starshipService: StarshipsService) {}
 

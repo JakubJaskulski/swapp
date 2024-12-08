@@ -41,7 +41,7 @@ export class Starship {
   hyperdrive_rating: string;
 
   @Column()
-  MGLT: string;
+  mglt: string;
 
   @Column()
   starship_class: string;
