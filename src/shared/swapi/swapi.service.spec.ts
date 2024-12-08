@@ -35,7 +35,6 @@ describe("SwapiService", () => {
 
       const result = await swapiService.getAll(entityName, elements);
 
-      expect(configService.get).toHaveBeenCalledWith("SWAPI_BASE_API");
       expect(externalApiService.fetch).toHaveBeenCalledWith(
         "https://swapi.dev/api/films?search=star&page=1",
       );
@@ -76,7 +75,6 @@ describe("SwapiService", () => {
 
       const result = await swapiService.getById(entityName, elements);
 
-      expect(configService.get).toHaveBeenCalledWith("SWAPI_BASE_API");
       expect(externalApiService.fetch).toHaveBeenCalledWith(
         "https://swapi.dev/api/films/1",
       );

@@ -84,25 +84,30 @@ describe("FilmsService", () => {
   });
 
   describe("getCharacterNameWithMostOccurrencesInOpeningCrawls", () => {
-    it("should return character(s) with most occurrences in opening crawls", async () => {
+    it("should return character with most occurrences in opening crawls", async () => {
       const character =
         await service.getCharacterNameWithMostOccurrencesInOpeningCrawls();
       expect(character).toEqual("Luke Skywalker");
     });
-  });
 
-  describe("getUniqueWords", () => {
-    it("should return a map of unique word occurrences from a given text", () => {
-      const text = "It is a test. It is a simple test.";
-      const uniqueWords = service["getUniqueWords"](text);
-
-      expect(uniqueWords).toEqual([
-        { it: 2 },
-        { is: 2 },
-        { a: 2 },
-        { test: 2 },
-        { simple: 1 },
-      ]);
+    it("should return array of characters with most occurrences in opening crawls", async () => {
+      service.findAll = jest.fn(() => {
+        return Promise.resolve([
+          {
+            title: "Film 1",
+            opening_crawl: "It is a period of civil war. Luke Skywalker.",
+            url: "url_1",
+          } as Film,
+          {
+            title: "Film 2",
+            opening_crawl: "The battle continues. Darth Vader",
+            url: "url_2",
+          } as Film,
+        ]);
+      });
+      const character =
+        await service.getCharacterNameWithMostOccurrencesInOpeningCrawls();
+      expect(character).toEqual(["Luke Skywalker", "Darth Vader"]);
     });
   });
 });
