@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { SwapiService } from "../../shared/swapi/swapi.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Film } from "./film.entity";
