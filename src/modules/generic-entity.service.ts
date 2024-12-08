@@ -18,7 +18,7 @@ export abstract class GenericEntityService<T extends SwapiResource> {
     page?: number,
   ): Promise<T[]> {
     try {
-      this.logger.debug(`Fetching all entities of type ${entityName}`);
+      this.logger.debug(`Fetching entities of type ${entityName}`);
       let whereCondition: FindOptionsWhere<T> = {};
 
       if (search) {
@@ -61,7 +61,7 @@ export abstract class GenericEntityService<T extends SwapiResource> {
       });
 
       this.logger.debug(
-        `Fetched and stored ${swapiEntities.length} entities from external service.`,
+        `Fetched and stored ${swapiEntities.length} entities of type ${entityName} from external service.`,
       );
 
       return swapiEntities.map((swapiEntity) => {
@@ -71,7 +71,7 @@ export abstract class GenericEntityService<T extends SwapiResource> {
       });
     } catch (error) {
       this.logger.error(
-        `Error occurred while fetching all entities of type ${entityName}: ${error.message}`,
+        `Error occurred while fetching entities of type ${entityName}: ${error.message}`,
         error.stack,
       );
       throw new HttpException(

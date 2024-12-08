@@ -15,13 +15,44 @@ export class SwapiService {
     entityName: string,
     elements: UrlElements,
   ): Promise<T[]> {
-    const url = this.buildSwapiUrl(entityName, elements);
-    const swapiResponse =
-      await this.externalApiService.fetch<SwapiResponse<T>>(url);
+    const swapiResults: T[] = [];
+    let swapiResponse: SwapiResponse<T>;
 
-    return swapiResponse.results.map((result) => {
-      return { ...result, search: [elements.search], page: elements.page || 1 };
-    });
+    if (elements.page) {
+      swapiResponse = await this.getResponseByPage(entityName, elements);
+      return swapiResponse.results.map((result) => {
+        return { ...result, search: [elements.search], page: elements.page };
+      });
+    } else {
+      let page = 0;
+      do {
+        page++;
+        const updatedElements = { ...elements, page };
+        const url = this.buildSwapiUrl(entityName, updatedElements);
+
+        swapiResponse =
+          await this.externalApiService.fetch<SwapiResponse<T>>(url);
+        swapiResults.push(
+          ...swapiResponse.results.map((result) => {
+            return {
+              ...result,
+              search: [updatedElements.search],
+              page: updatedElements.page,
+            };
+          }),
+        );
+      } while (swapiResponse.next);
+    }
+
+    return swapiResults;
+  }
+
+  private async getResponseByPage<SwapiResponse>(
+    entityName: string,
+    elements: UrlElements,
+  ): Promise<SwapiResponse> {
+    const url = this.buildSwapiUrl(entityName, elements);
+    return await this.externalApiService.fetch<SwapiResponse>(url);
   }
 
   async getById<T extends SwapiResource>(
