@@ -5,7 +5,7 @@ import { SwapiResource, SwapiService } from "../shared/swapi/swapi.service";
 
 @Injectable()
 export abstract class GenericEntityService<T extends SwapiResource> {
-  private readonly logger = new Logger(GenericEntityService.name);
+  protected readonly logger = new Logger(GenericEntityService.name);
 
   protected constructor(
     private readonly repository: BaseRepository<T>,
@@ -76,7 +76,9 @@ export abstract class GenericEntityService<T extends SwapiResource> {
       );
       throw new HttpException(
         `Failed to fetch entities of type ${entityName}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        error instanceof HttpException
+          ? error.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -101,7 +103,9 @@ export abstract class GenericEntityService<T extends SwapiResource> {
       );
       throw new HttpException(
         `Failed to fetch entity of type ${entityName} with ID ${id}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        error instanceof HttpException
+          ? error.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
 

@@ -65,7 +65,8 @@ describe("FilmsService", () => {
 
   describe("getUniqueWordsFromOpeningCrawls", () => {
     it("should return unique words with their occurrences from opening crawls", async () => {
-      const uniqueWords = await service.getUniqueWordsFromOpeningCrawls();
+      const uniqueWords =
+        await service.getUniqueWordsWithCountFromOpeningCrawls();
       expect(uniqueWords).toStrictEqual([
         { it: 1 },
         { is: 1 },

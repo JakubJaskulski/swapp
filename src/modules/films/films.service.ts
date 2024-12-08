@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { SwapiService } from "../../shared/swapi/swapi.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Film } from "./film.entity";
@@ -26,15 +26,23 @@ export class FilmsService extends GenericEntityService<Film> {
     return this.findOne(Film.swapiName, id);
   }
 
-  async getUniqueWordsFromOpeningCrawls(): Promise<OccurrencesArray> {
+  async getUniqueWordsWithCountFromOpeningCrawls(): Promise<OccurrencesArray> {
     const films = await this.getFilms();
-    const combinedCrawlText = films
-      .reduce((combined, movie) => combined + movie.opening_crawl + " ", "")
-      .trim();
-    return this.getUniqueWords(combinedCrawlText);
+
+    try {
+      const combinedCrawlText = films
+        .reduce((combined, movie) => combined + movie.opening_crawl + " ", "")
+        .trim();
+      return this.getUniqueWordsWithCount(combinedCrawlText);
+    } catch (error) {
+      this.logger.error(
+        `Error in getUniqueWordsFromOpeningCrawls: : ${error.message}`,
+      );
+      throw new Error("Failed to get unique words from opening crawls");
+    }
   }
 
-  private getUniqueWords(text: string): OccurrencesArray {
+  private getUniqueWordsWithCount(text: string): OccurrencesArray {
     const words = text.toLowerCase().match(/\b\w+\b/g) || [];
 
     const wordMap = new Map<string, number>();
@@ -59,22 +67,32 @@ export class FilmsService extends GenericEntityService<Film> {
     const characters = await this.charactersService.getCharacters();
     const characterNames = characters.map((character) => character.name);
 
-    const occurrences = this.countOccurrences(
-      combinedCrawlText,
-      characterNames,
-    );
+    try {
+      const occurrences = this.countOccurrences(
+        combinedCrawlText,
+        characterNames,
+      );
 
-    const maxOccurrences = Math.max(
-      ...occurrences.flatMap((occurrence) => Object.values(occurrence)),
-    );
+      const maxOccurrences = Math.max(
+        ...occurrences.flatMap((occurrence) => Object.values(occurrence)),
+      );
 
-    const maxOccurrencesName = occurrences
-      .filter((obj) => Object.values(obj).includes(maxOccurrences))
-      .map((occurrence) => Object.keys(occurrence)[0]);
+      const maxOccurrencesName = occurrences
+        .filter((obj) => Object.values(obj).includes(maxOccurrences))
+        .map((occurrence) => Object.keys(occurrence)[0]);
 
-    return maxOccurrencesName.length === 1
-      ? maxOccurrencesName[0]
-      : maxOccurrencesName;
+      return maxOccurrencesName.length === 1
+        ? maxOccurrencesName[0]
+        : maxOccurrencesName;
+    } catch (error) {
+      this.logger.error(
+        `Error in getCharacterNameWithMostOccurrencesInOpeningCrawls: ${error.message}`,
+        error.message,
+      );
+      throw new Error(
+        "Failed to get name of a character with most occurrences in opening crawls",
+      );
+    }
   }
 
   private countOccurrences(text: string, words: string[]): OccurrencesArray {
