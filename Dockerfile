@@ -1,24 +1,13 @@
-###################
-# SETUP FOR LOCAL DEVELOPMENT
-###################
+FROM node:18
 
-FROM node:18-alpine As development
+WORKDIR /app
 
-# Create app directory
-WORKDIR /usr/src/app
+COPY package*.json ./
 
-# Copy application dependency manifests to the container image.
-# A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
-# Copying this first prevents re-running npm install on every code change.
-COPY --chown=node:node package*.json ./
+RUN npm install
 
-# Install app dependencies using the `npm ci` command instead of `npm install`
-RUN npm ci
+COPY . .
 
-# Bundle app source
-COPY --chown=node:node . .
+RUN npm run build
 
-# Use the node user from the image (instead of the root user)
-USER node
-
-CMD [ "npm", "start:dev" ]
+CMD [ "npm", "run", "start:dev" ]

@@ -1,48 +1,47 @@
+version: '3.5'
+
 services:
   db:
-    container_name: postgres
-    image: postgres:14.3
-    user: root
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: test_db
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U root" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - volume_name:/var/lib/postgresql/data
-  pgadmin:
-    container_name: pgadmin
-    build:
-      context: .
-      dockerfile: env/pgadmin/Dockerfile
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
-    ports:
-      - "5050:80"
-    depends_on:
-      db:
-        condition: service_healthy
+    image: postgres
     restart: always
-  web:
-    container_name: swapp
-    stdin_open: true
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    container_name: postgres
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    profiles:
+      - ''
+      - local
+
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    depends_on:
-      db:
-          condition: service_healthy
+    container_name: nest-docker-postgres
+    environment:
+      - PORT=${PORT}
     ports:
-      - "3000:3000"
-    restart: always
+      - '3000:3000'
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src
+    profiles:
+      - ''
 
-volumes:
-  volume_name:
-    name: volume_name
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: nest-pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin4
+    ports:
+      - '5050:80'
+    depends_on:
+      - db
+    profiles:
+      - ''
+      - local

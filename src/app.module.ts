@@ -13,16 +13,31 @@ import { CharactersModule } from "./modules/characters/characters.module";
   imports: [
     TypeOrmModule.forRootAsync({
       imports: undefined,
-      useFactory: async (configService: ConfigService) => ({
-        type: "postgres",
-        host: configService.get<string>("DB_HOST"),
-        port: configService.get<number>("DB_PORT"),
-        username: configService.get<string>("DB_USERNAME"),
-        password: configService.get<string>("DB_PASSWORD"),
-        database: configService.get<string>("DB_NAME"),
-        autoLoadEntities: true,
-        synchronize: true,
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const dbHost = configService.get<string>("DB_HOST");
+        const dbPort = configService.get<number>("DB_PORT");
+        const dbUsername = configService.get<string>("DB_USERNAME");
+        const dbPassword = configService.get<string>("DB_PASSWORD");
+        const dbName = configService.get<string>("DB_NAME");
+
+        console.log("Database connection details:");
+        console.log(`DB_HOST: ${dbHost}`);
+        console.log(`DB_PORT: ${dbPort}`);
+        console.log(`DB_USERNAME: ${dbUsername}`);
+        console.log(`DB_NAME: ${dbName}`);
+
+        return {
+          type: "postgres",
+          host: "db",
+          port: 5432,
+          username: "postgres",
+          password: "postgres",
+          database: "postgres",
+          entities: [],
+          synchronize: true,
+          autoLoadEntities: true,
+        };
+      },
       inject: [ConfigService],
     }),
 
