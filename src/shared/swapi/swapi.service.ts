@@ -10,7 +10,7 @@ export class SwapiService {
   ) {}
 
   baseUrl = this.configService.get<string>("SWAPI_BASE_API");
-
+  swappUrl = this.configService.get<string>("SWAPP_BASE_API");
   async getAll<T extends SwapiResource>(
     entityName: string,
     elements: UrlElements,
@@ -36,6 +36,7 @@ export class SwapiService {
           ...swapiResponse.results.map((result) => {
             return {
               ...result,
+              url: this.mapReferenceUrl(result.url),
               search: [updatedElements.search],
               page: updatedElements.page,
             };
@@ -44,7 +45,7 @@ export class SwapiService {
       } while (swapiResponse.next);
     }
 
-    return swapiResults;
+    return this.mapAllReferences(swapiResults) as T[];
   }
 
   private async getResponseByPage<SwapiResponse>(
@@ -84,6 +85,61 @@ export class SwapiService {
 
     return url.href;
   }
+
+  mapAllReferences(resources: object[]): object[] {
+    const characterRefs = [
+      "characters",
+      "residents",
+      "people",
+      "pilots",
+      "pilots",
+    ];
+    const swapiResourceTypes = characterRefs.concat([
+      "films",
+      "planets",
+      "species",
+      "starships",
+      "vehicles",
+    ]);
+
+    return resources.map((resource) => {
+      const updatedResource = { ...resource };
+
+      swapiResourceTypes.forEach((swapiResourceType) => {
+        if (Array.isArray(updatedResource[swapiResourceType])) {
+          updatedResource[swapiResourceType] = updatedResource[
+            swapiResourceType
+          ].map((resourceRefUrl) => this.mapReferenceUrl(resourceRefUrl));
+        }
+      });
+
+      return updatedResource;
+    });
+  }
+
+  mapReferenceUrl(swapiUrl: string): string {
+    const match = swapiUrl.match(/\/api\/([^/]+)\//);
+    const entityRefName = match ? match[1] : null;
+
+    const characterRefs = [
+      "characters",
+      "residents",
+      "people",
+      "pilots",
+      "pilots",
+    ];
+
+    if (characterRefs.includes(entityRefName)) {
+      return swapiUrl.replace(
+        `${this.baseUrl}people/`,
+        `${this.swappUrl}characters/id/`,
+      );
+    }
+    return swapiUrl.replace(
+      `${this.baseUrl}${entityRefName}`,
+      `${this.swappUrl}${entityRefName}/id`,
+    );
+  }
 }
 
 type UrlElements = {
@@ -97,117 +153,6 @@ export type SwapiResponse<T> = {
   next: any;
   previous: any;
   results: T[];
-};
-
-export type SwapiFilm = SwapiResource & {
-  title: string;
-  episode_id: number;
-  opening_crawl: string;
-  director: string;
-  producer: string;
-  release_date: string;
-  characters: string[];
-  planets: string[];
-  starships: string[];
-  vehicles: string[];
-  species: string[];
-  created: string;
-  edited: string;
-  url: string;
-};
-
-export type SwapiCharacter = SwapiResource & {
-  name: string;
-  height: string;
-  mass: string;
-  hair_color: string;
-  skin_color: string;
-  eye_color: string;
-  birth_year: string;
-  gender: string;
-  homeworld: string;
-  films: string[];
-  species: string[];
-  vehicles: string[];
-  starships: string[];
-  created: string;
-  edited: string;
-  url: string;
-};
-
-export type SwapiPlanet = SwapiResource & {
-  name: string;
-  rotation_period: string;
-  orbital_period: string;
-  diameter: string;
-  climate: string;
-  gravity: string;
-  terrain: string;
-  surface_water: string;
-  population: string;
-  residents: string[];
-  films: string[];
-  created: string;
-  edited: string;
-  url: string;
-};
-
-export type SwapiSpecies = SwapiResource & {
-  name: string;
-  classification: string;
-  designation: string;
-  average_height: string;
-  skin_colors: string;
-  hair_colors: string;
-  eye_colors: string;
-  average_lifespan: string;
-  homeworld: string;
-  language: string;
-  people: string[];
-  films: string[];
-  created: string;
-  edited: string;
-  url: string;
-};
-
-export type SwapiStarship = SwapiResource & {
-  name: string;
-  model: string;
-  manufacturer: string;
-  cost_in_credits: string;
-  length: string;
-  max_atmosphering_speed: string;
-  crew: string;
-  passengers: string;
-  cargo_capacity: string;
-  consumables: string;
-  hyperdrive_rating: string;
-  MGLT: string;
-  starship_class: string;
-  pilots: string[];
-  films: string[];
-  created: string;
-  edited: string;
-  url: string;
-};
-
-export type SwapiVehicle = SwapiResource & {
-  name: string;
-  model: string;
-  manufacturer: string;
-  cost_in_credits: string;
-  length: string;
-  max_atmosphering_speed: string;
-  crew: string;
-  passengers: string;
-  cargo_capacity: string;
-  consumables: string;
-  vehicle_class: string;
-  pilots: string[];
-  films: string[];
-  created: string;
-  edited: string;
-  url: string;
 };
 
 export type SwapiResource = {
