@@ -14,7 +14,7 @@ import { CharactersModule } from "./modules/characters/characters.module";
     TypeOrmModule.forRootAsync({
       imports: undefined,
       useFactory: async (configService: ConfigService) => ({
-        type: "postgres", // Database type (change as needed)
+        type: "postgres",
         host: configService.get<string>("DB_HOST"),
         port: configService.get<number>("DB_PORT"),
         username: configService.get<string>("DB_USERNAME"),
@@ -23,7 +23,7 @@ import { CharactersModule } from "./modules/characters/characters.module";
         autoLoadEntities: true,
         synchronize: true,
       }),
-      inject: [ConfigService], // Inject ConfigService to get values from the .env file
+      inject: [ConfigService],
     }),
 
     FilmsModule,
