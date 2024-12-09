@@ -28,11 +28,11 @@ import { CharactersModule } from "./modules/characters/characters.module";
 
         return {
           type: "postgres",
-          host: "db",
-          port: 5432,
-          username: "postgres",
-          password: "postgres",
-          database: "postgres",
+          host: dbHost,
+          port: dbPort,
+          username: dbUsername,
+          password: dbPassword,
+          database: dbName,
           entities: [],
           synchronize: true,
           autoLoadEntities: true,
