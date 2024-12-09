@@ -2,7 +2,27 @@
 
 Nest.js template repository.
 
-## Project setup
+## Local setup
+
+```bash
+$ docker compose up
+```
+
+#### Swagger
+
+```bash
+url: http://localhost:3000/api
+```
+
+#### pgAdmin
+
+```bash
+url: http://localhost:5050/
+email: admin@admin.com
+password: pgadmin4
+```
+
+## Working setup
 
 ```bash
 $ npm install
@@ -10,15 +30,16 @@ $ npm install
 
 ## Compile and run the project
 
+### PostgreSQL and pgAdmin
+
 ```bash
-# development
-$ npm run start
+# development with watch mode, using .env.local
+$ docker compose --profile local up 
+```
 
-# watch mode
+```bash
+# development with watch mode, using .env.local
 $ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
 ## Run tests
@@ -26,10 +47,4 @@ $ npm run start:prod
 ```bash
 # unit tests
 $ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
