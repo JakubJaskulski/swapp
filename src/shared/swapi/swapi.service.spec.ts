@@ -1,117 +1,148 @@
-import { SwapiService } from "./swapi.service";
+import { Test, TestingModule } from "@nestjs/testing";
+import { SwapiService, SwapiResponse, SwapiResource } from "./swapi.service";
 import { ExternalApiService } from "./external-api.service";
 import { ConfigService } from "@nestjs/config";
 
-jest.mock("./external-api.service");
-jest.mock("@nestjs/config");
-
 describe("SwapiService", () => {
   let swapiService: SwapiService;
-  let externalApiService: jest.Mocked<ExternalApiService>;
-  let configService: jest.Mocked<ConfigService>;
+  let externalApiService: ExternalApiService;
+  let _configService: ConfigService;
 
-  beforeEach(() => {
-    externalApiService = new ExternalApiService(
-      null,
-    ) as jest.Mocked<ExternalApiService>;
-    configService = new ConfigService() as jest.Mocked<ConfigService>;
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        SwapiService,
+        {
+          provide: ExternalApiService,
+          useValue: {
+            fetch: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === "SWAPI_BASE_API") return "https://swapi.dev/api/";
+              if (key === "SWAPP_BASE_API") return "localhost:3000/";
+              return null;
+            }),
+          },
+        },
+      ],
+    }).compile();
 
-    configService.get.mockReturnValue("https://swapi.dev/api");
-
-    swapiService = new SwapiService(externalApiService, configService);
+    swapiService = module.get<SwapiService>(SwapiService);
+    externalApiService = module.get<ExternalApiService>(ExternalApiService);
+    _configService = module.get<ConfigService>(ConfigService);
   });
 
   describe("getAll", () => {
-    it("should construct the URL and fetch data from external API", async () => {
-      const entityName = "films";
-      const elements = { search: "star", page: 1 };
-
-      const mockResponse = {
+    it("should fetch all resources with pagination and map URLs", async () => {
+      const mockResponse: SwapiResponse<SwapiResource> = {
+        count: 1,
+        next: null,
+        previous: null,
         results: [
-          { title: "A New Hope", url: "https://swapi.dev/api/films/1/" },
+          {
+            url: "https://swapi.dev/api/people/1/",
+            search: [],
+            page: 1,
+            films: ["https://swapi.dev/api/films/1/"],
+          } as SwapiResource,
         ],
       };
-      externalApiService.fetch.mockResolvedValue(mockResponse);
 
-      const result = await swapiService.getAll(entityName, elements);
+      jest
+        .spyOn(externalApiService, "fetch")
+        .mockResolvedValueOnce(mockResponse);
 
-      expect(externalApiService.fetch).toHaveBeenCalledWith(
-        "https://swapi.dev/api/films?search=star&page=1",
-      );
+      const elements = { search: "Luke", page: 1 };
+      const result = await swapiService.getAll("people", elements);
 
       expect(result).toEqual([
         {
-          title: "A New Hope",
-          url: "https://swapi.dev/api/films/1/",
-          search: ["star"],
+          url: "localhost:3000/characters/id/1/",
+          search: ["Luke"],
           page: 1,
-        },
+          films: ["localhost:3000/films/id/1/"],
+        } as SwapiResource,
       ]);
     });
 
-    it("should return empty array if no results are found", async () => {
-      const entityName = "films";
-      const elements = { search: "nonexistent", page: 1 };
+    it("should fetch all resources across multiple pages and map URLs", async () => {
+      const page1Response: SwapiResponse<SwapiResource> = {
+        count: 4,
+        next: "https://swapi.dev/api/people/?page=2",
+        previous: null,
+        results: [
+          {
+            url: "https://swapi.dev/api/people/1/",
+            search: [],
+            page: 1,
+            films: ["https://swapi.dev/api/films/1/"],
+          } as SwapiResource,
+        ],
+      };
+      const page2Response: SwapiResponse<SwapiResource> = {
+        count: 4,
+        next: null,
+        previous: "https://swapi.dev/api/people/?page=1",
+        results: [
+          {
+            url: "https://swapi.dev/api/people/2/",
+            search: [],
+            page: 2,
+            films: ["https://swapi.dev/api/films/1/"],
+          } as SwapiResource,
+        ],
+      };
 
-      const mockResponse = { results: [] };
-      externalApiService.fetch.mockResolvedValue(mockResponse);
+      jest
+        .spyOn(externalApiService, "fetch")
+        .mockResolvedValueOnce(page1Response)
+        .mockResolvedValueOnce(page2Response);
 
-      const result = await swapiService.getAll(entityName, elements);
+      const elements = { search: "Luke" };
+      const result = await swapiService.getAll("people", elements);
 
-      expect(result).toEqual([]);
+      expect(result).toMatchObject([
+        {
+          url: "localhost:3000/characters/id/1/",
+          search: ["Luke"],
+          page: 1,
+          films: ["localhost:3000/films/id/1/"],
+        },
+        {
+          url: "localhost:3000/characters/id/2/",
+          search: ["Luke"],
+          page: 2,
+          films: ["localhost:3000/films/id/1/"],
+        },
+      ]);
     });
   });
 
   describe("getById", () => {
-    it("should construct the URL and fetch data by ID from external API", async () => {
-      const entityName = "films";
-      const elements = { id: 1, search: undefined, page: 1 };
+    it("should fetch a resource by ID and map the URL", async () => {
+      const mockResource: SwapiResource = {
+        url: "https://swapi.dev/api/people/1/",
+        search: [],
+        page: 0,
+        films: ["https://swapi.dev/api/films/1/"],
+      } as SwapiResource;
+      jest
+        .spyOn(externalApiService, "fetch")
+        .mockResolvedValueOnce(mockResource);
 
-      const mockResponse = {
-        title: "A New Hope",
-        url: "https://swapi.dev/api/films/1/",
-      };
-      externalApiService.fetch.mockResolvedValue(mockResponse);
-
-      const result = await swapiService.getById(entityName, elements);
-
-      expect(externalApiService.fetch).toHaveBeenCalledWith(
-        "https://swapi.dev/api/films/1",
-      );
+      const elements = { id: 1 };
+      const result = await swapiService.getById("people", elements);
 
       expect(result).toEqual({
-        title: "A New Hope",
-        url: "https://swapi.dev/api/films/1/",
+        url: "localhost:3000/characters/id/1/",
+        search: [],
+        page: 0,
+        films: ["localhost:3000/films/id/1/"],
       });
-    });
-  });
-
-  describe("buildSwapiUrl", () => {
-    it("should build URL with search and page parameters", () => {
-      const elements = { search: "star", page: 1 };
-      const entityName = "films";
-
-      const url = swapiService["buildSwapiUrl"](entityName, elements);
-
-      expect(url).toBe("https://swapi.dev/api/films?search=star&page=1");
-    });
-
-    it("should build URL with ID", () => {
-      const elements = { id: 1 };
-      const entityName = "films";
-
-      const url = swapiService["buildSwapiUrl"](entityName, elements);
-
-      expect(url).toBe("https://swapi.dev/api/films/1");
-    });
-
-    it("should build URL without search and page when not provided", () => {
-      const elements = {};
-      const entityName = "films";
-
-      const url = swapiService["buildSwapiUrl"](entityName, elements);
-
-      expect(url).toBe("https://swapi.dev/api/films");
     });
   });
 });

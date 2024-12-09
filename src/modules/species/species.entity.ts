@@ -31,8 +31,8 @@ export class Species {
   @Column()
   average_lifespan: string;
 
-  @Column()
-  homeworld: string;
+  @Column({ nullable: true })
+  homeworld?: string;
 
   @Column()
   language: string;

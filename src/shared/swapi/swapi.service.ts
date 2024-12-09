@@ -20,9 +20,16 @@ export class SwapiService {
 
     if (elements.page) {
       swapiResponse = await this.getResponseByPage(entityName, elements);
-      return swapiResponse.results.map((result) => {
-        return { ...result, search: [elements.search], page: elements.page };
-      });
+      swapiResults.push(
+        ...swapiResponse.results.map((result) => {
+          return {
+            ...result,
+            url: this.mapReferenceUrl(result.url),
+            search: [elements.search],
+            page: elements.page,
+          };
+        }),
+      );
     } else {
       let page = 0;
       do {
@@ -61,11 +68,15 @@ export class SwapiService {
     elements: UrlElements,
   ): Promise<T> {
     const url = this.buildSwapiUrl(entityName, elements);
-    return await this.externalApiService.fetch<T>(url);
+    const resource = await this.externalApiService.fetch<T>(url);
+    return {
+      ...this.mapAllReferences([resource])[0],
+      url: this.mapReferenceUrl(resource.url),
+    };
   }
 
   private buildSwapiUrl(entityName: string, elements: UrlElements) {
-    const url = new URL(`${this.baseUrl}/${entityName}`);
+    const url = new URL(`${this.baseUrl}${entityName}`);
 
     if (elements.id) {
       url.pathname = `${url.pathname}/${elements.id}`;
@@ -86,7 +97,7 @@ export class SwapiService {
     return url.href;
   }
 
-  mapAllReferences(resources: object[]): object[] {
+  private mapAllReferences<T>(resources: T[]): T[] {
     const characterRefs = [
       "characters",
       "residents",
@@ -117,7 +128,7 @@ export class SwapiService {
     });
   }
 
-  mapReferenceUrl(swapiUrl: string): string {
+  private mapReferenceUrl(swapiUrl: string): string {
     const match = swapiUrl.match(/\/api\/([^/]+)\//);
     const entityRefName = match ? match[1] : null;
 
@@ -157,6 +168,6 @@ export type SwapiResponse<T> = {
 
 export type SwapiResource = {
   url: string;
-  search: string[] | undefined;
-  page: number;
+  search?: string[] | undefined;
+  page?: number;
 };
