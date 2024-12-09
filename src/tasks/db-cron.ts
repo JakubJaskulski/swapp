@@ -39,7 +39,7 @@ export class CleanupService {
     ];
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_MINUTE)
   async deleteOldRecords() {
     const currentDate = new Date();
     const date24HoursAgo = new Date(
