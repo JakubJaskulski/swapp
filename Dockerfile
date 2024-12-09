@@ -1,20 +1,24 @@
-FROM node:16.15.0-alpine
+###################
+# SETUP FOR LOCAL DEVELOPMENT
+###################
 
-WORKDIR /srv
-COPY package.json /srv/
-COPY package-lock.json /srv/
-COPY tsconfig.json /srv/
-COPY tsconfig.build.json /srv/
+FROM node:18-alpine As development
 
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy application dependency manifests to the container image.
+# A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
+# Copying this first prevents re-running npm install on every code change.
+COPY --chown=node:node package*.json ./
+
+# Install app dependencies using the `npm ci` command instead of `npm install`
 RUN npm ci
 
-COPY motor /srv/motor
-COPY prisma /srv/prisma
+# Bundle app source
+COPY --chown=node:node . .
 
-RUN npx prisma generate
+# Use the node user from the image (instead of the root user)
+USER node
 
-RUN npm run build
-
-EXPOSE 8080
-
-CMD [ "npm", "start" ]
+CMD [ "npm", "start:dev" ]

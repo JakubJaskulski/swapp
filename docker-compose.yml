@@ -2,12 +2,20 @@ services:
   db:
     container_name: postgres
     image: postgres:14.3
+    user: root
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
       POSTGRES_DB: test_db
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - volume_name:/var/lib/postgresql/data
   pgadmin:
     container_name: pgadmin
     build:
@@ -18,15 +26,23 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - "5050:80"
+    depends_on:
+      db:
+        condition: service_healthy
     restart: always
   web:
-    container_name: motor
+    container_name: swapp
     stdin_open: true
     build:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - db
+      db:
+          condition: service_healthy
     ports:
       - "3000:3000"
     restart: always
+
+volumes:
+  volume_name:
+    name: volume_name
