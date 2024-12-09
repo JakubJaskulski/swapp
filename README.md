@@ -1,6 +1,8 @@
+# SWApi App
+
 ## Description
 
-Nest.js template repository.
+The app retrieves data from external API (https://swapi.dev/), processes it, and caches it in a local database for faster access and reduced API dependency. It ensures data freshness with 24h cache expiration.
 
 ## Local setup
 
